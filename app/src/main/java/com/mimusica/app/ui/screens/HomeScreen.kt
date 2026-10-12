@@ -28,6 +28,9 @@ import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +55,8 @@ import com.mimusica.app.ui.components.SectionTitle
 import com.mimusica.app.ui.components.Tab
 import com.mimusica.app.ui.theme.Nocturne
 import java.util.Calendar
+import androidx.compose.runtime.getValue
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
@@ -59,14 +64,20 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
     val recents = LibraryStore.recents.mapNotNull { MusicRepository.song(it) }.take(12)
     val newAlbums = MusicRepository.albums.sortedByDescending { a -> a.songs.maxOf { it.dateAdded } }.take(12)
     val artists = MusicRepository.artists.sortedByDescending { it.songs.size }.take(12)
-    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    val greeting = when (hour) {
+    val hour = remember{mutableStateOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))}
+    val greeting = when (hour.value) {
         in 5..11 -> "Buenos días"
         in 12..18 -> "Buenas tardes"
         else -> "Buenas noches"
     }
-    val name = LibraryStore.userName
+    val name = LibraryStore.userName.trim().substringBefore(" ")
 
+    LaunchedEffect(Unit) {
+        while(true) {
+            hour.value = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            delay(60_000)
+        }
+    }
     LazyColumn(contentPadding = contentPadding) {
         item {
             NocturneTopBar(name, onBell = { actions.message("No tienes notificaciones nuevas") }, onAvatar = { actions.goToTab(Tab.Settings) })
