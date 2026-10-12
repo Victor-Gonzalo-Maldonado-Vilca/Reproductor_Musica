@@ -1,0 +1,218 @@
+package com.mimusica.app.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.DownloadForOffline
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.mimusica.app.ui.AppActions
+import com.mimusica.app.data.Collection
+import com.mimusica.app.data.LibraryStore
+import com.mimusica.app.data.MusicRepository
+import com.mimusica.app.data.Song
+import com.mimusica.app.playback.PlayerController
+import com.mimusica.app.ui.components.Artwork
+import com.mimusica.app.ui.components.GradientCircleButton
+import com.mimusica.app.ui.components.NocturneTopBar
+import com.mimusica.app.ui.components.SectionTitle
+import com.mimusica.app.ui.components.Tab
+import com.mimusica.app.ui.theme.Nocturne
+import java.util.Calendar
+
+@Composable
+fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
+    val songs = MusicRepository.songs
+    val recents = LibraryStore.recents.mapNotNull { MusicRepository.song(it) }.take(12)
+    val newAlbums = MusicRepository.albums.sortedByDescending { a -> a.songs.maxOf { it.dateAdded } }.take(12)
+    val artists = MusicRepository.artists.sortedByDescending { it.songs.size }.take(12)
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val greeting = when (hour) {
+        in 5..11 -> "Buenos días"
+        in 12..18 -> "Buenas tardes"
+        else -> "Buenas noches"
+    }
+    val name = LibraryStore.userName
+
+    LazyColumn(contentPadding = contentPadding) {
+        item {
+            NocturneTopBar(name, onBell = { actions.message("No tienes notificaciones nuevas") }, onAvatar = { actions.goToTab(Tab.Settings) })
+        }
+        item {
+            Row(Modifier.padding(start = 20.dp, top = 16.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (name.isBlank()) greeting else "$greeting, $name",
+                    color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold,
+                )
+                Box(Modifier.padding(start = 6.dp, bottom = 12.dp).size(9.dp).clip(CircleShape).background(Nocturne.Cyan))
+            }
+        }
+
+        if (MusicRepository.loaded && songs.isEmpty()) {
+            item {
+                InfoCard(
+                    "No encontramos canciones en tu teléfono. Copia archivos de música (MP3, FLAC…) a la carpeta Música o Descargas y vuelve a escanear desde Ajustes.",
+                )
+            }
+            return@LazyColumn
+        }
+
+        // ---------- Accesos rápidos ----------
+        item {
+            Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    QuickTile(
+                        "Me gusta", Icons.Rounded.Favorite,
+                        Brush.linearGradient(listOf(Color(0xFF8B5CF6), Color(0xFF22B8CF))), Modifier.weight(1f),
+                    ) { actions.openCollection(Collection.Favorites) }
+                    QuickTile(
+                        "Descargas", Icons.Rounded.DownloadForOffline,
+                        Brush.linearGradient(listOf(Color(0xFF0F766E), Color(0xFF6366F1))), Modifier.weight(1f),
+                    ) { actions.openCollection(Collection.Downloads) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LibraryStore.playlists.take(2).forEach { p ->
+                        QuickTile(p.name, null, null, Modifier.weight(1f), cover = p.songIds.firstOrNull()?.let { MusicRepository.song(it) }) {
+                            actions.openCollection(Collection.UserPlaylist(p.id))
+                        }
+                    }
+                    if (LibraryStore.playlists.size < 2) {
+                        QuickTile(
+                            "Nueva playlist", Icons.Rounded.Add, Brush.linearGradient(listOf(Nocturne.SurfaceHigh, Nocturne.SurfaceHigher)),
+                            Modifier.weight(1f),
+                        ) { actions.createPlaylist() }
+                        if (LibraryStore.playlists.isEmpty()) Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+
+        // ---------- Mezcla aleatoria ----------
+        if (songs.isNotEmpty()) {
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Brush.linearGradient(listOf(Color(0xFF2A2350), Color(0xFF16303C))))
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("MEZCLA NOCTURNA", color = Nocturne.Cyan, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Toda tu música en aleatorio", color = Nocturne.TextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+                        Text("${songs.size} canciones", color = Nocturne.TextSecondary, fontSize = 15.sp)
+                    }
+                    GradientCircleButton(Icons.Rounded.Shuffle, "Aleatorio", size = 64.dp) {
+                        PlayerController.play(songs, shuffled = true)
+                    }
+                }
+            }
+        }
+
+        if (recents.isNotEmpty()) {
+            item { SectionTitle("Escuchado recientemente") }
+            item {
+                LazyRow(contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(recents, key = { it.id }) { s -> SongCard(s) { PlayerController.play(recents, recents.indexOf(s)) } }
+                }
+            }
+        }
+        if (newAlbums.isNotEmpty()) {
+            item { SectionTitle("Agregados recientemente", action = "Ver todo") { actions.goToTab(Tab.Library) } }
+            item {
+                LazyRow(contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(newAlbums, key = { it.id }) { a ->
+                        Column(Modifier.width(150.dp).clickable { actions.openCollection(Collection.AlbumOf(a.id)) }) {
+                            Artwork(a.songs.first(), 150.dp, corner = 14.dp)
+                            Spacer(Modifier.height(8.dp))
+                            Text(a.title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(a.artist, color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            }
+        }
+        if (artists.isNotEmpty()) {
+            item { SectionTitle("Tus artistas") }
+            item {
+                LazyRow(contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(artists, key = { it.name }) { a ->
+                        Column(
+                            Modifier.width(110.dp).clickable { actions.openCollection(Collection.ArtistOf(a.name)) },
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Artwork(a.songs.first(), 110.dp, corner = 55.dp, fallbackIcon = Icons.Rounded.Person)
+                            Spacer(Modifier.height(8.dp))
+                            Text(a.name, color = Nocturne.TextPrimary, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickTile(
+    title: String,
+    icon: ImageVector?,
+    brush: Brush?,
+    modifier: Modifier,
+    cover: Song? = null,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier.clip(RoundedCornerShape(14.dp)).background(Nocturne.Surface).clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Artwork(cover, 60.dp, corner = 0.dp, fallbackBrush = brush, fallbackIcon = icon ?: Icons.Rounded.PlayArrow)
+        Spacer(Modifier.width(12.dp))
+        Text(title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(end = 8.dp))
+    }
+}
+
+@Composable
+private fun SongCard(song: Song, onClick: () -> Unit) {
+    Column(Modifier.width(150.dp).clickable(onClick = onClick)) {
+        Artwork(song, 150.dp, corner = 14.dp)
+        Spacer(Modifier.height(8.dp))
+        Text(song.title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(song.artist, color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
