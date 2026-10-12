@@ -29,6 +29,8 @@ data class Song(
     val isLossless: Boolean get() = format == "FLAC" || format == "WAV"
 
     val isDownload: Boolean get() = path.contains("/Download", ignoreCase = true)
+
+    val isWhatsApp: Boolean get() = path.contains("/WhatsApp", ignoreCase = true)
 }
 
 data class Album(val id: Long, val title: String, val artist: String, val songs: List<Song>)
