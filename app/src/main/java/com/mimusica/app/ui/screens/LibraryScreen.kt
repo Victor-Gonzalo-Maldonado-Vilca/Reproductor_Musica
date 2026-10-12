@@ -381,7 +381,7 @@ private fun StorageCard(songs: List<Song>, onManage: () -> Unit) {
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Música local", color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                Text("Música local", color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 Spacer(Modifier.width(8.dp))
                 TagBadge(if (lossless > 0) "HI-RES" else songs.first().format, color = Nocturne.Cyan, background = Nocturne.CyanDim)
             }

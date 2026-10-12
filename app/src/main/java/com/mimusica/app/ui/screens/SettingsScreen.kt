@@ -184,7 +184,10 @@ private fun SettingRow(
             Text(subtitle, color = Nocturne.TextSecondary, fontSize = 14.sp)
         }
         when {
-            trailing != null -> trailing()
+            trailing != null -> {
+                Spacer(Modifier.width(12.dp))
+                trailing()
+            }
             onClick != null -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = Nocturne.TextSecondary)
         }
     }

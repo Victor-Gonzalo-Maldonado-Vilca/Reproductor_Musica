@@ -254,9 +254,9 @@ fun SongRow(
     ) {
         if (isCurrent) {
             Box(contentAlignment = Alignment.Center) {
-                Artwork(song, 68.dp, corner = 10.dp)
+                Artwork(song, 60.dp, corner = 10.dp)
                 if (isPlaying) {
-                    Box(Modifier.size(68.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.45f)))
+                    Box(Modifier.size(60.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.45f)))
                     WaveBars(Modifier.size(30.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
                 }
             }
@@ -264,10 +264,10 @@ fun SongRow(
         } else if (number != null) {
             Text(
                 "%02d".format(number),
-                color = Nocturne.TextMuted, fontSize = 18.sp,
-                modifier = Modifier.width(44.dp),
+                color = Nocturne.TextMuted, fontSize = 17.sp,
+                modifier = Modifier.width(36.dp),
             )
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(10.dp))
         } else {
             Artwork(song, 52.dp, corner = 8.dp)
             Spacer(Modifier.width(14.dp))
@@ -277,7 +277,7 @@ fun SongRow(
                 Text(
                     song.title,
                     color = if (isCurrent) Nocturne.Lavender else Nocturne.TextPrimary,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -288,11 +288,18 @@ fun SongRow(
                 }
             }
             Spacer(Modifier.height(2.dp))
-            Text(
-                if (isCurrent) song.artist else "${song.artist}  •  ${formatDuration(song.durationMs)}",
-                color = Nocturne.TextSecondary, fontSize = 16.sp,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
+            Row {
+                Text(
+                    song.artist, color = Nocturne.TextSecondary, fontSize = 15.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
+                )
+                if (!isCurrent) {
+                    Text(
+                        "  •  ${formatDuration(song.durationMs)}",
+                        color = Nocturne.TextSecondary, fontSize = 15.sp, maxLines = 1, softWrap = false,
+                    )
+                }
+            }
         }
         Icon(
             Icons.Rounded.MoreVert, "Opciones", tint = Nocturne.TextSecondary,
