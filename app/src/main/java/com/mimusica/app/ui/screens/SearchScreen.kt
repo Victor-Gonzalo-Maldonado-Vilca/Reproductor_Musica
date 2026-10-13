@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,8 +59,8 @@ fun SearchScreen(actions: AppActions, contentPadding: PaddingValues) {
     LazyColumn(contentPadding = contentPadding) {
         item {
             Text(
-                "Buscar", color = Nocturne.TextPrimary, fontSize = 38.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 16.dp),
+                "Buscar", color = Nocturne.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 14.dp),
             )
         }
         item {
@@ -67,14 +68,14 @@ fun SearchScreen(actions: AppActions, contentPadding: PaddingValues) {
                 value = query,
                 onValueChange = { query = it },
                 singleLine = true,
-                placeholder = { Text("Canciones, artistas o álbumes", color = Nocturne.TextMuted, fontSize = 17.sp) },
+                placeholder = { Text("Canciones, artistas o álbumes", color = Nocturne.TextMuted, fontSize = 15.sp) },
                 leadingIcon = { Icon(Icons.Rounded.Search, null, tint = Nocturne.TextSecondary) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
-                        Icon(Icons.Rounded.Close, "Borrar", tint = Nocturne.TextSecondary, modifier = Modifier.clickable { query = "" })
+                        Icon(Icons.Rounded.Close, "Borrar", tint = Nocturne.TextSecondary, modifier = Modifier.clip(androidx.compose.foundation.shape.CircleShape).clickable { query = "" }.padding(8.dp))
                     }
                 },
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Nocturne.Surface,
                     unfocusedContainerColor = Nocturne.Surface,

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -41,6 +42,7 @@ import com.mimusica.app.ui.components.MiniPlayer
 import com.mimusica.app.ui.components.NocturneBottomBar
 import com.mimusica.app.ui.components.NocturneToast
 import com.mimusica.app.ui.components.Tab
+import com.mimusica.app.ui.screens.AddSongsSheet
 import com.mimusica.app.ui.screens.AddToPlaylistSheet
 import com.mimusica.app.ui.screens.ConfirmDialog
 import com.mimusica.app.ui.screens.HomeScreen
@@ -62,6 +64,8 @@ class AppActions(
     val openNowPlaying: () -> Unit,
     val songOptions: (song: Song, playlistId: Long?) -> Unit,
     val addToPlaylist: (List<Long>) -> Unit,
+    /** Abre el buscador para elegir canciones nuevas para una playlist del usuario. */
+    val addSongs: (playlistId: Long) -> Unit,
     val createPlaylist: () -> Unit,
     val renamePlaylist: (Long) -> Unit,
     val deletePlaylist: (Long) -> Unit,
@@ -90,6 +94,7 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
 
     var songMenu by remember { mutableStateOf<SongMenu?>(null) }
     var addToPlaylist by remember { mutableStateOf<List<Long>?>(null) }
+    var addingSongsTo by remember { mutableStateOf<Long?>(null) }
     var creating by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf<Long?>(null) }
     var deleting by remember { mutableStateOf<Long?>(null) }
@@ -111,6 +116,7 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
             openNowPlaying = { nowPlaying = true },
             songOptions = { s, p -> songMenu = SongMenu(s, p) },
             addToPlaylist = { ids -> addToPlaylist = ids },
+            addSongs = { id -> addingSongsTo = id },
             createPlaylist = { creating = true },
             renamePlaylist = { renaming = it },
             deletePlaylist = { deleting = it },
@@ -191,7 +197,7 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
         SnackbarHost(
             snackbar,
             if (nowPlaying) Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp)
-            else Modifier.align(Alignment.BottomCenter).padding(bottom = 180.dp),
+            else Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = if (current != null) 140.dp else 72.dp),
         ) { data ->
             NocturneToast(data.visuals.message, (data.visuals as? ToastVisuals)?.icon)
         }
@@ -219,6 +225,13 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
     addToPlaylist?.let { ids ->
         AddToPlaylistSheet(ids, onDismiss = { addToPlaylist = null }) { msg ->
             addToPlaylist = null
+            actions.notify(msg, Icons.AutoMirrored.Rounded.PlaylistAdd)
+        }
+    }
+
+    addingSongsTo?.let { id ->
+        AddSongsSheet(id, onDismiss = { addingSongsTo = null }) { msg ->
+            addingSongsTo = null
             actions.notify(msg, Icons.AutoMirrored.Rounded.PlaylistAdd)
         }
     }

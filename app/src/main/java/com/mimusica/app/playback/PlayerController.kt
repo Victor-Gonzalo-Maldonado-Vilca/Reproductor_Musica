@@ -3,6 +3,9 @@ package com.mimusica.app.playback
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +49,60 @@ object PlayerController {
 
     val currentSong: Song? get() = currentSongId?.let { MusicRepository.song(it) }
 
+    // ---------- Temporizador para dormir ----------
+    // Vive aquí (y no en una pantalla) para que siga contando aunque se cierre el reproductor
+    // o se apague la pantalla: el servicio mantiene la CPU despierta mientras suena (WAKE_MODE_LOCAL).
+
+    private val handler = Handler(Looper.getMainLooper())
+    private val sleepRunnable = Runnable {
+        controller?.pause()
+        sleepEndsAt = null
+    }
+
+    /** Momento (en [SystemClock.elapsedRealtime]) en que se pausará la música, o null si no hay temporizador. */
+    var sleepEndsAt by mutableStateOf<Long?>(null)
+        private set
+
+    /** true si la música se pausará cuando termine la canción actual. */
+    var sleepAtEndOfSong by mutableStateOf(false)
+        private set
+
+    val sleepTimerActive: Boolean get() = sleepEndsAt != null || sleepAtEndOfSong
+
+    fun setSleepTimer(minutes: Int) {
+        cancelSleepTimer()
+        val ms = minutes * 60_000L
+        sleepEndsAt = SystemClock.elapsedRealtime() + ms
+        handler.postDelayed(sleepRunnable, ms)
+    }
+
+    fun sleepAtEndOfCurrentSong() {
+        cancelSleepTimer()
+        sleepAtEndOfSong = true
+    }
+
+    fun cancelSleepTimer() {
+        handler.removeCallbacks(sleepRunnable)
+        sleepEndsAt = null
+        sleepAtEndOfSong = false
+    }
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = sync(player)
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             mediaItem?.mediaId?.toLongOrNull()?.let { LibraryStore.addRecent(it) }
+            // La canción terminó sola (no fue un salto del usuario): si había que parar al final, se pausa.
+            val ended = reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+            if (sleepAtEndOfSong && ended) {
+                controller?.pause()
+                sleepAtEndOfSong = false
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            // Se acabó la cola entera: ya no queda canción por esperar.
+            if (playbackState == Player.STATE_ENDED) sleepAtEndOfSong = false
         }
     }
 

@@ -134,15 +134,15 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
         }
         item {
             Row(
-                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
+                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Tu Biblioteca", color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                Box(Modifier.padding(start = 6.dp, bottom = 14.dp).size(9.dp).clip(CircleShape).background(Nocturne.Cyan))
+                Text("Tu Biblioteca", color = Nocturne.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Box(Modifier.padding(start = 5.dp, bottom = 12.dp).size(8.dp).clip(CircleShape).background(Nocturne.Cyan))
                 Spacer(Modifier.weight(1f))
-                CircleIconButton(Icons.Rounded.Search, "Buscar", size = 58.dp) { actions.goToTab(Tab.Search) }
-                Spacer(Modifier.width(12.dp))
-                GradientCircleButton(Icons.Rounded.Add, "Crear playlist", size = 62.dp, iconTint = Color(0xFF3B1E8F)) {
+                CircleIconButton(Icons.Rounded.Search, "Buscar", size = 44.dp) { actions.goToTab(Tab.Search) }
+                Spacer(Modifier.width(10.dp))
+                GradientCircleButton(Icons.Rounded.Add, "Crear playlist", size = 44.dp, iconTint = Color(0xFF3B1E8F)) {
                     actions.createPlaylist()
                 }
             }
@@ -150,7 +150,7 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
         item {
             Row(
                 Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 LibraryFilter.entries.forEach { f ->
                     NocturneChip(
@@ -167,19 +167,19 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
         }
         item {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 20.dp, top = 14.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier.clip(RoundedCornerShape(10.dp)).clickable { sortRecent = !sortRecent }.padding(4.dp),
+                    Modifier.clip(RoundedCornerShape(10.dp)).clickable { sortRecent = !sortRecent }.padding(horizontal = 4.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Rounded.SwapVert, null, tint = Nocturne.TextSecondary, modifier = Modifier.size(26.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Text(if (sortRecent) "Más recientes" else "Alfabético (A–Z)", color = Nocturne.TextSecondary, fontSize = 18.sp)
+                    Icon(Icons.Rounded.SwapVert, null, tint = Nocturne.TextSecondary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (sortRecent) "Más recientes" else "Alfabético (A–Z)", color = Nocturne.TextSecondary, fontSize = 15.sp)
                 }
                 Spacer(Modifier.weight(1f))
-                Row(Modifier.clip(RoundedCornerShape(14.dp)).background(Nocturne.Surface).padding(4.dp)) {
+                Row(Modifier.clip(RoundedCornerShape(12.dp)).background(Nocturne.Surface).padding(3.dp)) {
                     ViewToggle(Icons.AutoMirrored.Rounded.ViewList, "Lista", !grid) { grid = false }
                     ViewToggle(Icons.Rounded.GridView, "Cuadrícula", grid) { grid = true }
                 }
@@ -265,13 +265,13 @@ private fun playlistItems(): List<LibraryItem> {
 private fun ViewToggle(icon: ImageVector, label: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
-            .size(width = 50.dp, height = 44.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .size(width = 42.dp, height = 34.dp)
+            .clip(RoundedCornerShape(9.dp))
             .background(if (selected) Nocturne.SurfaceHigher else Color.Transparent)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, label, tint = if (selected) Nocturne.Cyan else Nocturne.TextSecondary, modifier = Modifier.size(28.dp))
+        Icon(icon, label, tint = if (selected) Nocturne.Cyan else Nocturne.TextSecondary, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -281,48 +281,48 @@ private fun LibraryRow(item: LibraryItem, actions: AppActions) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(if (item.overline) Nocturne.Surface else Color.Transparent)
             .clickable { actions.openCollection(item.collection) }
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Artwork(
-            item.cover, 84.dp,
-            corner = if (item.circle) 42.dp else 12.dp,
+            item.cover, 60.dp,
+            corner = if (item.circle) 30.dp else 10.dp,
             fallbackBrush = item.coverBrush,
             fallbackIcon = item.coverIcon ?: if (item.circle) Icons.Rounded.Person else Icons.Rounded.GraphicEq,
         )
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             if (item.overline) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("FIJADO", color = Nocturne.Lavender, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp)
+                    Text("FIJADO", color = Nocturne.Lavender, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp)
                     Box(Modifier.padding(horizontal = 8.dp).size(4.dp).clip(CircleShape).background(Nocturne.TextMuted))
-                    Text("Auto-sync", color = Nocturne.Cyan, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Auto-sync", color = Nocturne.Cyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    item.title, color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
+                    item.title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
                 )
                 if (item.verified) {
                     Spacer(Modifier.width(8.dp))
-                    Icon(Icons.Rounded.Verified, "Fijado", tint = Nocturne.Cyan, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Rounded.Verified, "Fijado", tint = Nocturne.Cyan, modifier = Modifier.size(18.dp))
                 }
             }
-            Spacer(Modifier.height(4.dp))
-            Text(item.subtitle, color = Nocturne.TextSecondary, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(2.dp))
+            Text(item.subtitle, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         when {
-            item.overline -> Icon(Icons.Rounded.PushPin, "Fijado", tint = Nocturne.Lavender, modifier = Modifier.padding(8.dp).size(24.dp))
-            item.circle -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = Nocturne.TextSecondary, modifier = Modifier.padding(12.dp).size(30.dp))
+            item.overline -> Icon(Icons.Rounded.PushPin, "Fijado", tint = Nocturne.Lavender, modifier = Modifier.padding(10.dp).size(20.dp))
+            item.circle -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = Nocturne.TextSecondary, modifier = Modifier.padding(10.dp).size(24.dp))
             else -> Box {
                 Icon(
                     Icons.Rounded.MoreVert, "Opciones", tint = Nocturne.TextSecondary,
-                    modifier = Modifier.clip(CircleShape).clickable { menu = true }.padding(12.dp).size(26.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { menu = true }.padding(10.dp).size(22.dp),
                 )
                 DropdownMenu(menu, onDismissRequest = { menu = false }, containerColor = Nocturne.SurfaceHigh) {
                     CollectionMenuItems(item.collection, actions) { menu = false }
@@ -340,10 +340,17 @@ fun CollectionMenuItems(collection: Collection, actions: AppActions, close: () -
         text = { Text("Reproducir", color = Nocturne.TextPrimary) },
         onClick = { info?.let { PlayerController.play(it.songs) }; close() },
     )
-    DropdownMenuItem(
-        text = { Text("Agregar a una playlist", color = Nocturne.TextPrimary) },
-        onClick = { info?.let { actions.addToPlaylist(it.songs.map { s -> s.id }) }; close() },
-    )
+    if (collection is Collection.UserPlaylist) {
+        DropdownMenuItem(
+            text = { Text("Agregar canciones", color = Nocturne.TextPrimary) },
+            onClick = { actions.addSongs(collection.id); close() },
+        )
+    } else {
+        DropdownMenuItem(
+            text = { Text("Agregar a una playlist", color = Nocturne.TextPrimary) },
+            onClick = { info?.let { actions.addToPlaylist(it.songs.map { s -> s.id }) }; close() },
+        )
+    }
     if (collection !is Collection.Favorites) {
         DropdownMenuItem(
             text = { Text(if (LibraryStore.isPinned(collection.key)) "Quitar de la biblioteca" else "Fijar en la biblioteca", color = Nocturne.TextPrimary) },
@@ -376,8 +383,8 @@ private fun GridCard(item: LibraryItem, modifier: Modifier, onClick: () -> Unit)
             }
         }
         Spacer(Modifier.height(10.dp))
-        Text(item.title, color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(item.subtitle, color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(item.title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(item.subtitle, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -391,32 +398,32 @@ private fun StorageCard(songs: List<Song>, onManage: () -> Unit) {
             .padding(start = 20.dp, end = 20.dp, top = 28.dp, bottom = 12.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(Nocturne.Surface)
-            .padding(horizontal = 18.dp, vertical = 22.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(Nocturne.SurfaceHigh),
+            Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Nocturne.SurfaceHigh),
             contentAlignment = Alignment.Center,
         ) {
-            WaveBars(Modifier.size(30.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
+            WaveBars(Modifier.size(24.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
         }
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Música local", color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text("Música local", color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 Spacer(Modifier.width(8.dp))
                 TagBadge(if (lossless > 0) "HI-RES" else songs.first().format, color = Nocturne.Cyan, background = Nocturne.CyanDim)
             }
             Text(
                 "${formatSize(songs.sumOf { it.sizeBytes })}  •  ${songs.size} canciones",
-                color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.width(8.dp))
         Text(
-            "Gestionar", color = Nocturne.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            "Gestionar", color = Nocturne.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Nocturne.SurfaceHigher).clickable(onClick = onManage)
-                .padding(horizontal = 14.dp, vertical = 8.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
         )
     }
 }

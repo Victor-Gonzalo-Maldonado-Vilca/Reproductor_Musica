@@ -57,8 +57,8 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
     LazyColumn(contentPadding = contentPadding) {
         item {
             Text(
-                "Ajustes", color = Nocturne.TextPrimary, fontSize = 38.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 16.dp),
+                "Ajustes", color = Nocturne.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 14.dp),
             )
         }
         // ---------- Perfil ----------
@@ -70,22 +70,23 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
                     .clip(RoundedCornerShape(20.dp))
                     .background(Nocturne.Surface)
                     .clickable { editingName = true }
-                    .padding(18.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                UserAvatar(LibraryStore.userName, size = 60.dp) { editingName = true }
-                Spacer(Modifier.width(16.dp))
+                UserAvatar(LibraryStore.userName, size = 48.dp) { editingName = true }
+                Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         LibraryStore.userName.ifBlank { "Tu nombre" },
-                        color = Nocturne.TextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold,
+                        color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         "${songs.size} canciones  •  ${LibraryStore.playlists.size} playlists  •  ${LibraryStore.favorites.size} me gusta",
-                        color = Nocturne.TextSecondary, fontSize = 14.sp,
+                        color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 }
-                Icon(Icons.Rounded.Edit, "Editar nombre", tint = Nocturne.Cyan)
+                Icon(Icons.Rounded.Edit, "Editar nombre", tint = Nocturne.Cyan, modifier = Modifier.size(20.dp))
             }
         }
 
@@ -167,8 +168,8 @@ Si desinstalas la app, toda esta información se borra."""
 @Composable
 private fun Group(title: String) {
     Text(
-        title, color = Nocturne.Cyan, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp,
-        modifier = Modifier.padding(start = 24.dp, top = 28.dp, bottom = 8.dp),
+        title, color = Nocturne.Cyan, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp,
+        modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 8.dp),
     )
 }
 
@@ -190,11 +191,11 @@ private fun SettingRow(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, null, tint = Nocturne.Lavender, modifier = Modifier.size(26.dp))
+        Icon(icon, null, tint = Nocturne.Lavender, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, color = Nocturne.TextPrimary, fontSize = 18.sp)
-            Text(subtitle, color = Nocturne.TextSecondary, fontSize = 14.sp)
+            Text(title, color = Nocturne.TextPrimary, fontSize = 16.sp)
+            Text(subtitle, color = Nocturne.TextSecondary, fontSize = 13.sp)
         }
         when {
             trailing != null -> {

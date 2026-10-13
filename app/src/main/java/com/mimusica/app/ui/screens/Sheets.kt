@@ -22,6 +22,12 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.TimerOff
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Favorite
@@ -38,7 +44,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mimusica.app.data.Collection
 import com.mimusica.app.data.LibraryStore
+import com.mimusica.app.data.MusicRepository
+import com.mimusica.app.playback.PlayerController
 import com.mimusica.app.data.Song
 import com.mimusica.app.ui.components.Artwork
 import com.mimusica.app.ui.theme.Nocturne
@@ -67,12 +77,12 @@ private fun SheetRow(
         Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, null, tint = tint, modifier = Modifier.size(26.dp))
-        Spacer(Modifier.width(20.dp))
-        Text(label, color = tint, fontSize = 18.sp)
+        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(18.dp))
+        Text(label, color = tint, fontSize = 16.sp)
     }
 }
 
@@ -99,13 +109,13 @@ fun SongOptionsSheet(
                 Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Artwork(song, 56.dp)
-                Spacer(Modifier.width(16.dp))
+                Artwork(song, 48.dp)
+                Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         song.title,
                         color = Nocturne.TextPrimary,
-                        fontSize = 19.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -113,7 +123,7 @@ fun SongOptionsSheet(
                     Text(
                         "${song.artist}  •  ${song.format}",
                         color = Nocturne.TextSecondary,
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -175,7 +185,7 @@ fun AddToPlaylistSheet(songIds: List<Long>, onDismiss: () -> Unit, onDone: (Stri
             Text(
                 "Agregar a playlist",
                 color = Nocturne.TextPrimary,
-                fontSize = 22.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
@@ -195,16 +205,16 @@ fun AddToPlaylistSheet(songIds: List<Long>, onDismiss: () -> Unit, onDone: (Stri
                         Artwork(
                             p.songIds.firstOrNull()
                                 ?.let { com.mimusica.app.data.MusicRepository.song(it) },
-                            48.dp,
+                            44.dp,
                             corner = 8.dp
                         )
-                        Spacer(Modifier.width(16.dp))
+                        Spacer(Modifier.width(14.dp))
                         Column {
-                            Text(p.name, color = Nocturne.TextPrimary, fontSize = 18.sp)
+                            Text(p.name, color = Nocturne.TextPrimary, fontSize = 16.sp)
                             Text(
                                 "${p.songIds.size} canciones",
                                 color = Nocturne.TextSecondary,
-                                fontSize = 14.sp
+                                fontSize = 13.sp
                             )
                         }
                     }
@@ -246,17 +256,17 @@ fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int
                 Text(
                     "Novedades",
                     color = Nocturne.TextPrimary,
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 20.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Nocturne.Surface)
-                    .padding(6.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Nocturne.SurfaceHigh)
+                    .padding(4.dp),
             ) {
                 listOf(
                     "Canciones (${songNewsList.size})" to false,
@@ -283,7 +293,7 @@ fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int
                         Spacer(Modifier.width(8.dp))
                         Text(
                             label,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             color = if (selected) Nocturne.TextPrimary else Nocturne.TextSecondary,
@@ -306,22 +316,22 @@ fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int
                                 .padding(horizontal = 24.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Artwork(song, 48.dp, corner = 8.dp)
-                            Spacer(Modifier.width(16.dp))
+                            Artwork(song, 44.dp, corner = 8.dp)
+                            Spacer(Modifier.width(14.dp))
                             Column {
                                 Text(
                                     song.title,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     color = Nocturne.TextPrimary,
-                                    fontSize = 18.sp
+                                    fontSize = 16.sp
                                 )
                                 Text(
                                     song.artist,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     color = Nocturne.TextSecondary,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp
                                 )
                             }
                         }
@@ -339,6 +349,143 @@ fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int
     }
 }
 
+/** Opciones del temporizador para dormir. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SleepTimerSheet(onDismiss: () -> Unit, onChosen: (String) -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Nocturne.Surface,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+            Row(Modifier.padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Bedtime, null, tint = Nocturne.Lavender, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.width(12.dp))
+                Text("Temporizador", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            Text(
+                "La música se pausará sola, aunque apagues la pantalla.",
+                color = Nocturne.TextSecondary, fontSize = 14.sp,
+                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp),
+            )
+            listOf(15, 30, 45, 60).forEach { min ->
+                SheetRow(Icons.Rounded.Timer, "$min minutos") {
+                    PlayerController.setSleepTimer(min)
+                    onChosen("La música se pausará en $min minutos")
+                }
+            }
+            SheetRow(Icons.Rounded.Bedtime, "Al terminar la canción") {
+                PlayerController.sleepAtEndOfCurrentSong()
+                onChosen("La música se pausará al terminar esta canción")
+            }
+            if (PlayerController.sleepTimerActive) {
+                SheetRow(Icons.Rounded.TimerOff, "Desactivar temporizador", tint = Color(0xFFFF8A9A)) {
+                    PlayerController.cancelSleepTimer()
+                    onChosen("Temporizador desactivado")
+                }
+            }
+        }
+    }
+}
+
+/** Buscar canciones de la biblioteca y agregarlas a una playlist (solo muestra las que aún no tiene). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> Unit) {
+    val playlist = LibraryStore.playlist(playlistId) ?: return
+    var query by remember { mutableStateOf("") }
+    val selected = remember { mutableStateListOf<Long>() }
+    val inPlaylist = playlist.songIds.toSet()
+    val candidates = MusicRepository.songs.filter { it.id !in inPlaylist }
+    val visible = query.trim().lowercase().let { q ->
+        if (q.isEmpty()) candidates
+        else candidates.filter { q in it.title.lowercase() || q in it.artist.lowercase() || q in it.album.lowercase() }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Nocturne.Surface,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+            Text(
+                "Agregar a ${playlist.name}", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Rounded.Search, null, tint = Nocturne.TextSecondary) },
+                placeholder = { Text("Buscar canción o artista", color = Nocturne.TextMuted) },
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Nocturne.Purple,
+                    unfocusedBorderColor = Nocturne.SurfaceHigher,
+                    focusedTextColor = Nocturne.TextPrimary,
+                    unfocusedTextColor = Nocturne.TextPrimary,
+                    cursorColor = Nocturne.Cyan,
+                ),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
+            )
+            if (visible.isEmpty()) {
+                Text(
+                    if (candidates.isEmpty()) "Ya agregaste todas tus canciones a esta playlist." else "No hay resultados.",
+                    color = Nocturne.TextSecondary, fontSize = 15.sp,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
+                )
+            }
+            LazyColumn(Modifier.weight(1f, fill = false)) {
+                items(visible, key = { it.id }) { song ->
+                    val checked = song.id in selected
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { if (checked) selected.remove(song.id) else selected.add(song.id) }
+                            .padding(horizontal = 24.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Artwork(song, 44.dp, corner = 8.dp)
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                song.title, color = if (checked) Nocturne.Lavender else Nocturne.TextPrimary,
+                                fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                        Icon(
+                            if (checked) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
+                            if (checked) "Seleccionada" else "Sin seleccionar",
+                            tint = if (checked) Nocturne.Cyan else Nocturne.TextMuted,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                }
+            }
+            val count = selected.size
+            Text(
+                if (count == 0) "Elige canciones" else "Agregar $count ${if (count == 1) "canción" else "canciones"}",
+                color = if (count == 0) Nocturne.TextMuted else Color(0xFF1A1440),
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .then(if (count == 0) Modifier.background(Nocturne.SurfaceHigh) else Modifier.background(Nocturne.Accent))
+                    .clickable(enabled = count > 0) {
+                        // Se agregan en el orden de la lista, no en el orden en que se tocaron.
+                        LibraryStore.addToPlaylist(playlistId, candidates.map { it.id }.filter { it in selected })
+                        onDone(if (count == 1) "1 canción agregada" else "$count canciones agregadas")
+                    }
+                    .padding(vertical = 14.dp),
+            )
+        }
+    }
+}
+
 /** Diálogo para escribir un nombre (crear o renombrar playlist). */
 @Composable
 fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
@@ -352,6 +499,8 @@ fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, onConfirm:
                 value = text,
                 onValueChange = { text = it.take(60) },
                 singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { if (text.isNotBlank()) onConfirm(text) }),
                 placeholder = { Text("Nombre", color = Nocturne.TextMuted) },
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -410,12 +559,12 @@ fun ConfirmDialog(
 @Composable
 fun InfoCard(text: String, modifier: Modifier = Modifier) {
     Text(
-        text, color = Nocturne.TextSecondary, fontSize = 16.sp,
+        text, color = Nocturne.TextSecondary, fontSize = 15.sp,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(Nocturne.Surface)
-            .padding(20.dp),
+            .padding(18.dp),
     )
 }

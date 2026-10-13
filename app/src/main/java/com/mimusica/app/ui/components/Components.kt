@@ -115,21 +115,21 @@ fun NocturneTopBar(userName: String, hasNews: Boolean, onBell: () -> Unit, onAva
         Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        NocturneLogo()
-        Spacer(Modifier.width(14.dp))
-        Text("Nocturne", color = Nocturne.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+        NocturneLogo(36.dp)
+        Spacer(Modifier.width(12.dp))
+        Text("Nocturne", color = Nocturne.TextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         Box {
             Icon(
                 Icons.Rounded.NotificationsNone, "Notificaciones", tint = Nocturne.TextPrimary,
-                modifier = Modifier.size(28.dp).clickable(onClick = onBell),
+                modifier = Modifier.clip(CircleShape).clickable(onClick = onBell).padding(8.dp).size(24.dp),
             )
             if (hasNews) {
-                Box(Modifier.align(Alignment.TopEnd).size(8.dp).clip(CircleShape).background(Color(0xFFFF5A6E)))
+                Box(Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp).size(8.dp).clip(CircleShape).background(Color(0xFFFF5A6E)))
             }
         }
-        Spacer(Modifier.width(20.dp))
-        UserAvatar(userName, onClick = onAvatar)
+        Spacer(Modifier.width(8.dp))
+        UserAvatar(userName, size = 38.dp, onClick = onAvatar)
     }
 }
 
@@ -186,21 +186,21 @@ fun NocturneChip(
             .clip(CircleShape)
             .background(if (selected) Nocturne.PurpleDim else Nocturne.Surface)
             .clickable(onClick = onClick)
-            .padding(horizontal = 22.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leading != null) {
-            Icon(leading, null, tint = Nocturne.Cyan, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(8.dp))
+            Icon(leading, null, tint = Nocturne.Cyan, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
         }
         Text(
             label,
             color = if (selected) Nocturne.Lavender else Nocturne.TextSecondary,
-            fontSize = 17.sp,
+            fontSize = 15.sp,
         )
         if (selected) {
-            Spacer(Modifier.width(10.dp))
-            Box(Modifier.size(7.dp).clip(CircleShape).background(Nocturne.Lavender))
+            Spacer(Modifier.width(8.dp))
+            Box(Modifier.size(6.dp).clip(CircleShape).background(Nocturne.Lavender))
         }
     }
 }
@@ -226,9 +226,9 @@ fun TagBadge(text: String, color: Color = Nocturne.Lavender, background: Color =
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier, action: String? = null, onAction: () -> Unit = {}) {
     Row(modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text, color = Nocturne.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text(text, color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
         if (action != null) {
-            Text(action, color = Nocturne.Cyan, fontSize = 15.sp, modifier = Modifier.clickable(onClick = onAction))
+            Text(action, color = Nocturne.Cyan, fontSize = 14.sp, modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onAction).padding(6.dp))
         }
     }
 }
@@ -254,27 +254,28 @@ fun SongRow(
             .clip(RoundedCornerShape(14.dp))
             .background(if (isCurrent) Nocturne.Surface else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(horizontal = if (isCurrent) 6.dp else 14.dp, vertical = if (isCurrent) 6.dp else 12.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (isCurrent) {
             Box(contentAlignment = Alignment.Center) {
-                Artwork(song, 60.dp, corner = 10.dp)
+                Artwork(song, 48.dp, corner = 8.dp)
                 if (isPlaying) {
-                    Box(Modifier.size(60.dp).clip(RoundedCornerShape(10.dp)).background(Color.Black.copy(alpha = 0.45f)))
-                    WaveBars(Modifier.size(30.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
+                    Box(Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = 0.45f)))
+                    WaveBars(Modifier.size(22.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
                 }
             }
             Spacer(Modifier.width(14.dp))
         } else if (number != null) {
             Text(
                 "%02d".format(number),
-                color = Nocturne.TextMuted, fontSize = 17.sp,
-                modifier = Modifier.width(36.dp),
+                color = Nocturne.TextMuted, fontSize = 15.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.width(48.dp),
             )
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(14.dp))
         } else {
-            Artwork(song, 52.dp, corner = 8.dp)
+            Artwork(song, 48.dp, corner = 8.dp)
             Spacer(Modifier.width(14.dp))
         }
         Column(Modifier.weight(1f)) {
@@ -282,7 +283,7 @@ fun SongRow(
                 Text(
                     song.title,
                     color = if (isCurrent) Nocturne.Lavender else Nocturne.TextPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -295,13 +296,13 @@ fun SongRow(
             Spacer(Modifier.height(2.dp))
             Row {
                 Text(
-                    song.artist, color = Nocturne.TextSecondary, fontSize = 15.sp,
+                    song.artist, color = Nocturne.TextSecondary, fontSize = 13.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
                 )
                 if (!isCurrent) {
                     Text(
                         "  •  ${formatDuration(song.durationMs)}",
-                        color = Nocturne.TextSecondary, fontSize = 15.sp, maxLines = 1, softWrap = false,
+                        color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, softWrap = false,
                     )
                 }
             }
@@ -315,11 +316,11 @@ fun SongRow(
             val stepPx = with(LocalDensity.current) { 72.dp.toPx() }
             var drag by remember { mutableFloatStateOf(0f) }
             val reorder by rememberUpdatedState(onReorder)
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(4.dp))
             Icon(
                 Icons.Rounded.DragHandle, "Reordenar", tint = Nocturne.TextSecondary,
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(24.dp)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(onDragEnd = { drag = 0f }) { change, dy ->
                             change.consume()
@@ -353,31 +354,31 @@ fun MiniPlayer(
             .clickable(onClick = onOpen),
     ) {
         Row(
-            Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(Nocturne.Surface),
+                Modifier.size(46.dp).clip(RoundedCornerShape(10.dp)).background(Nocturne.Surface),
                 contentAlignment = Alignment.Center,
             ) {
                 val art = rememberAlbumArt(song)
-                if (art != null) Artwork(song, 52.dp, corner = 12.dp)
-                else WaveBars(Modifier.size(26.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
+                if (art != null) Artwork(song, 46.dp, corner = 10.dp)
+                else WaveBars(Modifier.size(22.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
             }
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(song.title, color = Nocturne.TextPrimary, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(song.artist, color = Nocturne.TextSecondary, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(song.title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(song.artist, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Icon(
                 Icons.Rounded.SkipNext, "Siguiente", tint = Nocturne.TextPrimary,
                 modifier = Modifier.size(44.dp).clip(CircleShape).clickable(onClick = onNext).padding(8.dp),
             )
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(6.dp))
             GradientCircleButton(
                 if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                 if (isPlaying) "Pausar" else "Reproducir",
-                size = 56.dp, onClick = onTogglePlay,
+                size = 44.dp, onClick = onTogglePlay,
             )
         }
         // Línea de progreso en el borde inferior
@@ -405,7 +406,7 @@ fun NocturneBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
             .fillMaxWidth()
             .background(Nocturne.Background)
             .navigationBarsPadding()
-            .padding(vertical = 10.dp),
+            .padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         Tab.entries.forEach { tab ->
@@ -421,13 +422,13 @@ fun NocturneBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
                 Icon(
                     tab.icon, tab.label,
                     tint = if (active) Nocturne.Cyan else Nocturne.TextSecondary,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(24.dp),
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     tab.label,
                     color = if (active) Nocturne.Cyan else Nocturne.TextSecondary,
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
                 )
             }
@@ -453,22 +454,22 @@ fun NocturneToast(message: String, icon: ImageVector?) {
                 Brush.linearGradient(listOf(Nocturne.Purple.copy(alpha = 0.7f), Nocturne.Cyan.copy(alpha = 0.7f))),
                 shape,
             )
-            .padding(start = 10.dp, end = 18.dp, top = 10.dp, bottom = 10.dp),
+            .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(36.dp).clip(CircleShape).background(Nocturne.Accent),
+            Modifier.size(32.dp).clip(CircleShape).background(Nocturne.Accent),
             contentAlignment = Alignment.Center,
         ) {
             val dark = Color(0xFF1A1440)
-            if (icon != null) Icon(icon, null, tint = dark, modifier = Modifier.size(20.dp))
+            if (icon != null) Icon(icon, null, tint = dark, modifier = Modifier.size(18.dp))
             else WaveBars(Modifier.size(18.dp), Brush.linearGradient(listOf(dark, dark)))
         }
         Spacer(Modifier.width(12.dp))
         Text(
             message,
             color = Nocturne.TextPrimary,
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,

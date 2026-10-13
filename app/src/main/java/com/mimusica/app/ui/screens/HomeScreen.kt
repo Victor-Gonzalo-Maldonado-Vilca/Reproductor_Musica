@@ -83,19 +83,19 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
             NocturneTopBar(name, MusicRepository.newSongs.isNotEmpty(), onBell = { actions.showNews() }, onAvatar = { actions.goToTab(Tab.Settings) })
         }
         item {
-            Column (Modifier.padding(start = 20.dp, top = 16.dp, bottom = 20.dp), horizontalAlignment = Alignment.Start) {
-                Text(
-                    text = if (name.isBlank()) greeting else "$greeting,",
-                    color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold,
-                )
+            Column(Modifier.padding(start = 20.dp, top = 8.dp, bottom = 20.dp), horizontalAlignment = Alignment.Start) {
                 if (name.isNotBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = name,
-                        color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold,
-                    )
+                    Text("$greeting,", color = Nocturne.TextSecondary, fontSize = 18.sp)
+                    Spacer(Modifier.height(2.dp))
                 }
-                Box(Modifier.padding(start = 6.dp, bottom = 12.dp).size(9.dp).clip(CircleShape).background(Nocturne.Cyan))
+                // El punto cian va pegado al final de la última línea, como en "Tu Biblioteca".
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = name.ifBlank { greeting },
+                        color = Nocturne.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                    )
+                    Box(Modifier.padding(start = 5.dp, bottom = 9.dp).size(8.dp).clip(CircleShape).background(Nocturne.Cyan))
+                }
             }
         }
 
@@ -140,8 +140,8 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
-                        .clip(RoundedCornerShape(22.dp))
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
+                        .clip(RoundedCornerShape(20.dp))
                         .background(Brush.linearGradient(listOf(Color(0xFF2A2350), Color(0xFF16303C))))
                         .padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -149,10 +149,11 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
                     Column(Modifier.weight(1f)) {
                         Text("MEZCLA NOCTURNA", color = Nocturne.Cyan, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
                         Spacer(Modifier.height(4.dp))
-                        Text("Toda tu música en aleatorio", color = Nocturne.TextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
-                        Text("${songs.size} canciones", color = Nocturne.TextSecondary, fontSize = 15.sp)
+                        Text("Toda tu música en aleatorio", color = Nocturne.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                        Text("${songs.size} canciones", color = Nocturne.TextSecondary, fontSize = 14.sp)
                     }
-                    GradientCircleButton(Icons.Rounded.Shuffle, "Aleatorio", size = 64.dp) {
+                    Spacer(Modifier.width(12.dp))
+                    GradientCircleButton(Icons.Rounded.Shuffle, "Aleatorio", size = 52.dp) {
                         PlayerController.play(songs, shuffled = true)
                         actions.notify("Mezcla nocturna en aleatorio", Icons.Rounded.Shuffle)
                     }
@@ -218,7 +219,7 @@ private fun QuickTile(
     ) {
         Artwork(cover, 48.dp, corner = 0.dp, fallbackBrush = brush, fallbackIcon = icon ?: Icons.Rounded.PlayArrow)
         Spacer(Modifier.width(12.dp))
-        Text(title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(end = 8.dp))
+        Text(title, color = Nocturne.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(end = 8.dp))
     }
 }
 

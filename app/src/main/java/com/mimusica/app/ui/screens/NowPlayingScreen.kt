@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -41,7 +42,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +82,7 @@ fun NowPlayingScreen(actions: AppActions) {
         return
     }
     var showQueue by remember { mutableStateOf(false) }
+    var showSleep by remember { mutableStateOf(false) }
     // Mientras el usuario arrastra la barra, mostramos su posición en vez de la real.
     var scrubbing by remember { mutableStateOf(false) }
     var scrubValue by remember { mutableFloatStateOf(0f) }
@@ -98,21 +102,21 @@ fun NowPlayingScreen(actions: AppActions) {
             Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Rounded.KeyboardArrowDown, "Cerrar", tint = Nocturne.TextPrimary,
-                    modifier = Modifier.clip(CircleShape).clickable { actions.back() }.padding(8.dp).size(32.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { actions.back() }.padding(8.dp).size(28.dp),
                 )
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("REPRODUCIENDO DESDE", color = Nocturne.Cyan, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.5.sp)
-                    Text(song.album, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("REPRODUCIENDO DESDE", color = Nocturne.Cyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.5.sp)
+                    Text(song.album, color = Nocturne.TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Icon(
                     Icons.Rounded.MoreVert, "Opciones", tint = Nocturne.TextPrimary,
-                    modifier = Modifier.clip(CircleShape).clickable { actions.songOptions(song, null) }.padding(8.dp).size(28.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { actions.songOptions(song, null) }.padding(10.dp).size(24.dp),
                 )
             }
 
             // ---------- Carátula ----------
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                val side = minOf(maxWidth, maxHeight) - 16.dp
+                val side = minOf(maxWidth - 16.dp, maxHeight - 16.dp, 340.dp)
                 Box(Modifier.shadow(48.dp, RoundedCornerShape(28.dp), ambientColor = Nocturne.Purple, spotColor = Nocturne.Cyan)) {
                     Artwork(song, side, corner = 28.dp)
                 }
@@ -123,7 +127,7 @@ fun NowPlayingScreen(actions: AppActions) {
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            song.title, color = Nocturne.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold,
+                            song.title, color = Nocturne.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold,
                             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
                         )
                         if (song.isLossless) {
@@ -132,7 +136,7 @@ fun NowPlayingScreen(actions: AppActions) {
                         }
                     }
                     Text(
-                        song.artist, color = Nocturne.TextSecondary, fontSize = 19.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        song.artist, color = Nocturne.TextSecondary, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.clickable {
                             actions.openCollection(
                                 if (song.isWhatsApp) com.mimusica.app.data.Collection.WhatsApp
@@ -145,7 +149,7 @@ fun NowPlayingScreen(actions: AppActions) {
                 Icon(
                     if (fav) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, "Me gusta",
                     tint = Nocturne.Lavender,
-                    modifier = Modifier.clip(CircleShape).clickable { LibraryStore.toggleFavorite(song.id) }.padding(10.dp).size(30.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { LibraryStore.toggleFavorite(song.id) }.padding(10.dp).size(26.dp),
                 )
             }
 
@@ -157,22 +161,32 @@ fun NowPlayingScreen(actions: AppActions) {
                     PlayerController.seekTo((scrubValue * duration).toLong())
                     scrubbing = false
                 },
-                colors = SliderDefaults.colors(
-                    thumbColor = Nocturne.Lavender,
-                    activeTrackColor = Nocturne.Purple,
-                    inactiveTrackColor = Nocturne.SurfaceHigher,
-                ),
-                modifier = Modifier.padding(top = 12.dp),
+                thumb = {
+                    Box(Modifier.size(14.dp).shadow(4.dp, CircleShape).clip(CircleShape).background(Nocturne.Lavender))
+                },
+                track = { state ->
+                    SliderDefaults.Track(
+                        sliderState = state,
+                        modifier = Modifier.height(4.dp),
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Nocturne.Purple,
+                            inactiveTrackColor = Nocturne.SurfaceHigher,
+                        ),
+                        thumbTrackGapSize = 0.dp,
+                        drawStopIndicator = null,
+                    )
+                },
+                modifier = Modifier.padding(top = 8.dp),
             )
             Row(Modifier.fillMaxWidth()) {
-                Text(formatDuration(position), color = Nocturne.TextSecondary, fontSize = 14.sp)
+                Text(formatDuration(position), color = Nocturne.TextSecondary, fontSize = 12.sp)
                 Spacer(Modifier.weight(1f))
-                Text(formatDuration(duration), color = Nocturne.TextSecondary, fontSize = 14.sp)
+                Text(formatDuration(duration), color = Nocturne.TextSecondary, fontSize = 12.sp)
             }
 
             // ---------- Controles ----------
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 18.dp),
+                Modifier.fillMaxWidth().padding(vertical = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -184,7 +198,7 @@ fun NowPlayingScreen(actions: AppActions) {
                 GradientCircleButton(
                     if (PlayerController.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                     if (PlayerController.isPlaying) "Pausar" else "Reproducir",
-                    size = 86.dp,
+                    size = 72.dp,
                 ) { PlayerController.togglePlay() }
                 ControlIcon(Icons.Rounded.SkipNext, "Siguiente") { PlayerController.next() }
                 ToggleIcon(
@@ -206,28 +220,33 @@ fun NowPlayingScreen(actions: AppActions) {
                     .padding(bottom = 12.dp)
                     .clip(RoundedCornerShape(18.dp))
                     .background(Nocturne.Surface.copy(alpha = 0.8f))
-                    .padding(horizontal = 18.dp, vertical = 12.dp),
+                    .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                WaveBars(Modifier.size(22.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
-                Spacer(Modifier.width(12.dp))
-                Text("${song.format}  •  Archivo local", color = Nocturne.TextSecondary, fontSize = 15.sp, modifier = Modifier.weight(1f))
-                Row(
-                    Modifier.clip(RoundedCornerShape(10.dp)).clickable { showQueue = true }.padding(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.AutoMirrored.Rounded.QueueMusic, null, tint = Nocturne.Cyan, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Cola", color = Nocturne.Cyan, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                }
+                WaveBars(Modifier.size(20.dp), Brush.linearGradient(listOf(Nocturne.Cyan, Nocturne.Cyan)))
+                Spacer(Modifier.width(10.dp))
+                Text(song.format, color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                FooterButton(
+                    Icons.Rounded.Bedtime, sleepLabel(),
+                    active = PlayerController.sleepTimerActive,
+                ) { showSleep = true }
+                Spacer(Modifier.width(6.dp))
+                FooterButton(Icons.AutoMirrored.Rounded.QueueMusic, "Cola", active = false) { showQueue = true }
             }
+        }
+    }
+
+    if (showSleep) {
+        SleepTimerSheet(onDismiss = { showSleep = false }) { msg ->
+            showSleep = false
+            actions.notify(msg, Icons.Rounded.Bedtime)
         }
     }
 
     if (showQueue) {
         ModalBottomSheet(onDismissRequest = { showQueue = false }, containerColor = Nocturne.Surface) {
             Text(
-                "A continuación", color = Nocturne.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold,
+                "A continuación", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             LazyColumn(Modifier.heightIn(max = 520.dp).navigationBarsPadding()) {
@@ -238,11 +257,11 @@ fun NowPlayingScreen(actions: AppActions) {
                         Modifier.fillMaxWidth().clickable { PlayerController.skipTo(item.index) }.padding(horizontal = 24.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Artwork(s, 48.dp, corner = 8.dp)
+                        Artwork(s, 44.dp, corner = 8.dp)
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(s.title, color = if (current) Nocturne.Lavender else Nocturne.TextPrimary, fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(s.artist, color = Nocturne.TextSecondary, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(s.title, color = if (current) Nocturne.Lavender else Nocturne.TextPrimary, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(s.artist, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }
@@ -252,11 +271,43 @@ fun NowPlayingScreen(actions: AppActions) {
     }
 }
 
+/** Texto del botón del temporizador: "Dormir", la cuenta atrás o "Fin canción". */
+@Composable
+private fun sleepLabel(): String {
+    val endsAt = PlayerController.sleepEndsAt
+    if (endsAt == null) return if (PlayerController.sleepAtEndOfSong) "Fin canción" else "Dormir"
+    var now by remember { mutableLongStateOf(android.os.SystemClock.elapsedRealtime()) }
+    LaunchedEffect(endsAt) {
+        while (true) {
+            now = android.os.SystemClock.elapsedRealtime()
+            kotlinx.coroutines.delay(1000)
+        }
+    }
+    return formatDuration((endsAt - now).coerceAtLeast(0))
+}
+
+@Composable
+private fun FooterButton(icon: ImageVector, label: String, active: Boolean, onClick: () -> Unit) {
+    val color = if (active) Nocturne.Cyan else Nocturne.TextSecondary
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (active) Nocturne.CyanDim.copy(alpha = 0.5f) else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(label, color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+    }
+}
+
 @Composable
 private fun ControlIcon(icon: ImageVector, label: String, onClick: () -> Unit) {
     Icon(
         icon, label, tint = Nocturne.TextPrimary,
-        modifier = Modifier.clip(CircleShape).clickable(onClick = onClick).padding(8.dp).size(44.dp),
+        modifier = Modifier.clip(CircleShape).clickable(onClick = onClick).padding(8.dp).size(36.dp),
     )
 }
 
@@ -265,8 +316,8 @@ private fun ToggleIcon(icon: ImageVector, label: String, active: Boolean, onClic
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
             icon, label, tint = if (active) Nocturne.Cyan else Nocturne.TextSecondary,
-            modifier = Modifier.clip(CircleShape).clickable(onClick = onClick).padding(8.dp).size(28.dp),
+            modifier = Modifier.clip(CircleShape).clickable(onClick = onClick).padding(10.dp).size(24.dp),
         )
-        Box(Modifier.size(5.dp).clip(CircleShape).background(if (active) Nocturne.Cyan else Color.Transparent))
+        Box(Modifier.size(4.dp).clip(CircleShape).background(if (active) Nocturne.Cyan else Color.Transparent))
     }
 }
