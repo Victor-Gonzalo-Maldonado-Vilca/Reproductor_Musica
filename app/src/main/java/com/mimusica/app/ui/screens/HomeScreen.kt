@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.DownloadForOffline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.Whatsapp
 import androidx.compose.material3.Icon
@@ -83,11 +84,18 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
             NocturneTopBar(name, onBell = { actions.message("No tienes notificaciones nuevas") }, onAvatar = { actions.goToTab(Tab.Settings) })
         }
         item {
-            Row(Modifier.padding(start = 20.dp, top = 16.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column (Modifier.padding(start = 20.dp, top = 16.dp, bottom = 20.dp), horizontalAlignment = Alignment.Start) {
                 Text(
-                    if (name.isBlank()) greeting else "$greeting, $name",
+                    text = if (name.isBlank()) greeting else "$greeting,",
                     color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold,
                 )
+                if (name.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = name,
+                        color = Nocturne.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold,
+                    )
+                }
                 Box(Modifier.padding(start = 6.dp, bottom = 12.dp).size(9.dp).clip(CircleShape).background(Nocturne.Cyan))
             }
         }
@@ -116,7 +124,7 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     QuickTile(
-                        "WhatsApp", Icons.Rounded.Whatsapp,
+                        "WhatsApp", Icons.Rounded.Share,
                         Brush.linearGradient(listOf(Color(0xFF25D366), Color(0xFF128C7E))), Modifier.weight(1f),
                     ) { actions.openCollection(Collection.WhatsApp)}
                     QuickTile(
@@ -208,7 +216,7 @@ private fun QuickTile(
         modifier.clip(RoundedCornerShape(14.dp)).background(Nocturne.Surface).clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Artwork(cover, 60.dp, corner = 0.dp, fallbackBrush = brush, fallbackIcon = icon ?: Icons.Rounded.PlayArrow)
+        Artwork(cover, 48.dp, corner = 0.dp, fallbackBrush = brush, fallbackIcon = icon ?: Icons.Rounded.PlayArrow)
         Spacer(Modifier.width(12.dp))
         Text(title, color = Nocturne.TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(end = 8.dp))
     }
