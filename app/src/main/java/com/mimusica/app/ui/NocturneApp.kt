@@ -65,7 +65,7 @@ private data class SongMenu(val song: Song, val playlistId: Long?, val index: In
 
 @Composable
 fun NocturneApp(onRescan: () -> Unit) {
-    var tab by remember { mutableStateOf(Tab.Library) }
+    var tab by remember { mutableStateOf(Tab.Home) }
     val stack = remember { mutableStateListOf<Collection>() }
     var nowPlaying by remember { mutableStateOf(false) }
 
