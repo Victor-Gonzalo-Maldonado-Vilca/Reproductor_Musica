@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Whatsapp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +56,6 @@ import com.mimusica.app.ui.components.SectionTitle
 import com.mimusica.app.ui.components.Tab
 import com.mimusica.app.ui.theme.Nocturne
 import java.util.Calendar
-import androidx.compose.runtime.getValue
 import kotlinx.coroutines.delay
 
 @Composable
@@ -115,18 +115,14 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
                     ) { actions.openCollection(Collection.Downloads) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LibraryStore.playlists.take(2).forEach { p ->
-                        QuickTile(p.name, null, null, Modifier.weight(1f), cover = p.songIds.firstOrNull()?.let { MusicRepository.song(it) }) {
-                            actions.openCollection(Collection.UserPlaylist(p.id))
-                        }
-                    }
-                    if (LibraryStore.playlists.size < 2) {
-                        QuickTile(
-                            "Nueva playlist", Icons.Rounded.Add, Brush.linearGradient(listOf(Nocturne.SurfaceHigh, Nocturne.SurfaceHigher)),
-                            Modifier.weight(1f),
-                        ) { actions.createPlaylist() }
-                        if (LibraryStore.playlists.isEmpty()) Spacer(Modifier.weight(1f))
-                    }
+                    QuickTile(
+                        "WhatsApp", Icons.Rounded.Whatsapp,
+                        Brush.linearGradient(listOf(Color(0xFF25D366), Color(0xFF128C7E))), Modifier.weight(1f),
+                    ) { actions.openCollection(Collection.WhatsApp)}
+                    QuickTile(
+                        "Nueva playlist", Icons.Rounded.Add, Brush.linearGradient(listOf(Nocturne.SurfaceHigh, Nocturne.SurfaceHigher)),
+                        Modifier.weight(1f),
+                    ) { actions.createPlaylist() }
                 }
             }
         }

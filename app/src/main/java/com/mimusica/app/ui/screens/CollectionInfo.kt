@@ -20,6 +20,7 @@ data class CollectionInfo(
         get() = when (collection) {
             Collection.Favorites -> "AUTO-SYNC"
             Collection.Downloads -> "EN TU DISPOSITIVO"
+            Collection.WhatsApp -> "EN TU DISPOSITIVO"
             is Collection.UserPlaylist -> "TU PLAYLIST"
             is Collection.AlbumOf -> "ÁLBUM"
             is Collection.ArtistOf -> "ARTISTA"
@@ -28,6 +29,7 @@ data class CollectionInfo(
 
 fun resolve(collection: Collection): CollectionInfo? {
     val all = MusicRepository.songs
+    val whatsapp = MusicRepository.whatsappAudios
     return when (collection) {
         Collection.Favorites -> CollectionInfo(
             collection, "Canciones que te gustan", "Playlist", "ti",
@@ -36,6 +38,10 @@ fun resolve(collection: Collection): CollectionInfo? {
         Collection.Downloads -> CollectionInfo(
             collection, "Descargas", "Carpeta", "tu dispositivo",
             all.filter { it.isDownload },
+        )
+        Collection.WhatsApp -> CollectionInfo(
+            collection, "Audios de WhatsApp", "Carpeta", "WhatsApp",
+            whatsapp
         )
         is Collection.UserPlaylist -> LibraryStore.playlist(collection.id)?.let { p ->
             CollectionInfo(collection, p.name, "Playlist", "ti", p.songIds.mapNotNull { MusicRepository.song(it) })

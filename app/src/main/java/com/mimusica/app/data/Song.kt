@@ -53,6 +53,10 @@ sealed interface Collection {
         override val key = "downloads"
     }
 
+    data object WhatsApp : Collection {
+        override val key = "whatsapp"
+    }
+
     data class UserPlaylist(val id: Long) : Collection {
         override val key get() = "playlist:$id"
     }
@@ -71,6 +75,7 @@ sealed interface Collection {
             return when {
                 key == Favorites.key -> Favorites
                 key == Downloads.key -> Downloads
+                key == WhatsApp.key -> WhatsApp
                 key.startsWith("playlist:") -> value.toLongOrNull()?.let { UserPlaylist(it) }
                 key.startsWith("album:") -> value.toLongOrNull()?.let { AlbumOf(it) }
                 key.startsWith("artist:") -> ArtistOf(value)
