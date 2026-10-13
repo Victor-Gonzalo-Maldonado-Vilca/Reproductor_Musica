@@ -2,6 +2,7 @@ package com.mimusica.app.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.collection.MutableScatterMap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,18 +20,21 @@ object LibraryStore {
         private set
     var recents by mutableStateOf<List<Long>>(emptyList())
         private set
+
+    var knownSongs by mutableStateOf<List<Long>>(emptyList())
+        private set
     var pinned by mutableStateOf<Set<String>>(emptySet())
         private set
     var skipShortTracks by mutableStateOf(true)
         private set
     var userName by mutableStateOf("")
         private set
-
     fun init(context: Context) {
         if (::prefs.isInitialized) return
         prefs = context.getSharedPreferences("nocturne", Context.MODE_PRIVATE)
         favorites = readIds("favorites")
         recents = readIds("recents")
+        knownSongs = readIds("known_songs")
         pinned = prefs.getStringSet("pinned", emptySet())!!.toSet()
         skipShortTracks = prefs.getBoolean("skip_short", true)
         userName = prefs.getString("user_name", "") ?: ""
@@ -63,7 +67,15 @@ object LibraryStore {
         writeIds("recents", recents)
     }
 
+    // ---------- Novedades ----------
+    fun markAllSeen(ids: List<Long>) {
+        knownSongs = ids
+        writeIds("known_songs", knownSongs)
+    }
+
+    val hasKnownSongs: Boolean get() = prefs.contains("known_songs")
     // ---------- Colecciones fijadas ----------
+
     fun isPinned(key: String) = key in pinned
 
     fun togglePinned(key: String) {

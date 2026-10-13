@@ -30,6 +30,9 @@ object MusicRepository {
         get() = songs.groupBy { it.artist }.map { (name, list) -> Artist(name, list) }
             .sortedBy { it.name.lowercase() }
 
+    val newSongs: List<Song>
+        get() = (songs + whatsappAudios).filter { it.id !in LibraryStore.knownSongs}
+
     fun song(id: Long): Song? = songs.firstOrNull { it.id == id } ?: whatsappAudios.firstOrNull { it.id == id}
 
     suspend fun load(context: Context, skipShort: Boolean) {
@@ -37,6 +40,7 @@ object MusicRepository {
         val (songsList, whatsapAudiosList) = alls.partition {!it.isWhatsApp}
         songs = songsList
         whatsappAudios = whatsapAudiosList
+        if (!LibraryStore.hasKnownSongs) LibraryStore.markAllSeen(newSongs.map{ it.id })
         loaded = true
     }
 
