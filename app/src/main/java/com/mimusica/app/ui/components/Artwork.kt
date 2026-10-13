@@ -65,7 +65,8 @@ fun rememberAlbumArt(song: Song?): ImageBitmap? {
             value = null
             return@produceState
         }
-        ArtCache.images.get(key)?.let { value = it; return@produceState }
+        value = ArtCache.images.get(key)
+        if (value != null) return@produceState
         if (key in ArtCache.missing) return@produceState
         val loaded = withContext(Dispatchers.IO) { loadArt(context, song) }
         if (loaded != null) ArtCache.images.put(key, loaded) else ArtCache.missing += key
