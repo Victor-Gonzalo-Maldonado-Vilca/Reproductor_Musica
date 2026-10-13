@@ -217,11 +217,11 @@ fun NowPlayingScreen(actions: AppActions) {
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             LazyColumn(Modifier.heightIn(max = 520.dp).navigationBarsPadding()) {
-                itemsIndexed(PlayerController.queue) { index, id ->
-                    val s = MusicRepository.song(id) ?: return@itemsIndexed
-                    val current = id == PlayerController.currentSongId
+                itemsIndexed(PlayerController.queue) { index, item ->
+                    val s = MusicRepository.song(item.songId) ?: return@itemsIndexed
+                    val current = item.songId == PlayerController.currentSongId
                     Row(
-                        Modifier.fillMaxWidth().clickable { PlayerController.skipTo(index) }.padding(horizontal = 24.dp, vertical = 8.dp),
+                        Modifier.fillMaxWidth().clickable { PlayerController.skipTo(item.index) }.padding(horizontal = 24.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Artwork(s, 48.dp, corner = 8.dp)

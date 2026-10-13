@@ -82,7 +82,7 @@ fun PlaylistDetailScreen(collection: Collection, actions: AppActions, contentPad
     val context = LocalContext.current
     val songs = info.songs
     val playingThis = PlayerController.currentSongId != null &&
-        PlayerController.queue == songs.map { it.id }
+        PlayerController.queue.sortedBy { it.index }.map { it.songId } == songs.map { it.id }
     val playlistId = (collection as? Collection.UserPlaylist)?.id
 
     LazyColumn(contentPadding = contentPadding) {

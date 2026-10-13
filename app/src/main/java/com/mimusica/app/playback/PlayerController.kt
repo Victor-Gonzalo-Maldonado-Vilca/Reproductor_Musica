@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -18,6 +19,7 @@ import com.mimusica.app.data.LibraryStore
 import com.mimusica.app.data.MusicRepository
 import com.mimusica.app.data.Song
 
+data class QueueItem(val index: Int, val songId: Long)
 /** Conecta la interfaz con el servicio de reproducción y expone su estado a Compose. */
 object PlayerController {
 
@@ -36,7 +38,7 @@ object PlayerController {
         private set
     var durationMs by mutableLongStateOf(0L)
         private set
-    var queue by mutableStateOf<List<Long>>(emptyList())
+    var queue by mutableStateOf<List<QueueItem>>(emptyList())
         private set
 
     val currentSong: Song? get() = currentSongId?.let { MusicRepository.song(it) }
@@ -142,7 +144,15 @@ object PlayerController {
         repeatMode = p.repeatMode
         positionMs = p.currentPosition.coerceAtLeast(0)
         durationMs = p.duration.coerceAtLeast(0)
-        queue = (0 until p.mediaItemCount).mapNotNull { p.getMediaItemAt(it).mediaId.toLongOrNull() }
+        val items = mutableListOf<QueueItem>()
+        val timeline = p.currentTimeline
+        var i = timeline.getFirstWindowIndex(p.shuffleModeEnabled)
+        while (i != C.INDEX_UNSET) {
+            val id = p.getMediaItemAt(i).mediaId.toLongOrNull()
+            if (id != null) items += QueueItem(i, id)
+            i = timeline.getNextWindowIndex(i, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled)
+        }
+        queue = items
     }
 
     private fun Song.toMediaItem(): MediaItem = MediaItem.Builder()
