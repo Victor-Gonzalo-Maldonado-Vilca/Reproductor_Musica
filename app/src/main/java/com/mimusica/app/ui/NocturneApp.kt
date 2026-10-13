@@ -92,7 +92,13 @@ fun NocturneApp(onRescan: () -> Unit) {
             renamePlaylist = { renaming = it },
             deletePlaylist = { deleting = it },
             goToTab = { t -> stack.clear(); nowPlaying = false; tab = t },
-            message = { m -> scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(m) } },
+            message = { m ->
+                scope.launch {
+                    snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(
+                    m
+                )
+                }
+            },
             back = {
                 when {
                     nowPlaying -> nowPlaying = false
@@ -123,12 +129,16 @@ fun NocturneApp(onRescan: () -> Unit) {
     }
 
     val current = PlayerController.currentSong
-    Box(Modifier.fillMaxSize().background(Nocturne.Background)) {
+    Box(Modifier
+        .fillMaxSize()
+        .background(Nocturne.Background)) {
         Column(Modifier.fillMaxSize()) {
             Box(Modifier.weight(1f)) {
                 val padding = PaddingValues(bottom = 16.dp)
                 val top = stack.lastOrNull()
-                Box(Modifier.fillMaxSize().statusBarsPadding()) {
+                Box(Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()) {
                     if (top != null) {
                         PlaylistDetailScreen(top, actions, padding)
                     } else when (tab) {
@@ -159,8 +169,13 @@ fun NocturneApp(onRescan: () -> Unit) {
             NowPlayingScreen(actions)
         }
 
-        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 180.dp)) {
-            Snackbar(containerColor = Nocturne.SurfaceHigher, contentColor = Nocturne.TextPrimary) { Text(it.visuals.message) }
+        SnackbarHost(snackbar, Modifier
+            .align(Alignment.BottomCenter)
+            .padding(bottom = 180.dp)) {
+            Snackbar(
+                containerColor = Nocturne.SurfaceHigher,
+                contentColor = Nocturne.TextPrimary
+            ) { Text(it.visuals.message) }
         }
     }
 
@@ -173,7 +188,14 @@ fun NocturneApp(onRescan: () -> Unit) {
             onPlayNext = { PlayerController.playNext(m.song); actions.message("Sonará a continuación") },
             onAddToQueue = { PlayerController.addToQueue(m.song); actions.message("Agregada a la cola") },
             onAddToPlaylist = { songMenu = null; addToPlaylist = listOf(m.song.id) },
-            onRemoveFromPlaylist = { m.playlistId?.let { LibraryStore.removeFromPlaylist(it, m.index) } },
+            onRemoveFromPlaylist = {
+                m.playlistId?.let {
+                    LibraryStore.removeFromPlaylist(
+                        it,
+                        m.index
+                    )
+                }
+            },
             onOpen = { actions.openCollection(it) },
         )
     }
@@ -185,7 +207,11 @@ fun NocturneApp(onRescan: () -> Unit) {
     }
 
     news?.let { list ->
-        NewsSheet( songs = list, onDismiss = { news = null }, onPlay = {song, index -> PlayerController.play(song, index)}, onOpenWhatsApp = { }, )
+        NewsSheet(
+            songs = list,
+            onDismiss = { news = null },
+            onPlay = { songs, index -> PlayerController.play(songs, index) },
+        )
     }
 
     if (creating) {
@@ -196,7 +222,10 @@ fun NocturneApp(onRescan: () -> Unit) {
         }
     }
     renaming?.let { id ->
-        NameDialog("Renombrar playlist", LibraryStore.playlist(id)?.name ?: "", onDismiss = { renaming = null }) { name ->
+        NameDialog(
+            "Renombrar playlist",
+            LibraryStore.playlist(id)?.name ?: "",
+            onDismiss = { renaming = null }) { name ->
             LibraryStore.renamePlaylist(id, name)
             renaming = null
         }

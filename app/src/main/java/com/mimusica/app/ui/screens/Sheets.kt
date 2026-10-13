@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,9 +56,17 @@ import com.mimusica.app.ui.components.Artwork
 import com.mimusica.app.ui.theme.Nocturne
 
 @Composable
-private fun SheetRow(icon: ImageVector, label: String, tint: Color = Nocturne.TextPrimary, onClick: () -> Unit) {
+private fun SheetRow(
+    icon: ImageVector,
+    label: String,
+    tint: Color = Nocturne.TextPrimary,
+    onClick: () -> Unit
+) {
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 24.dp, vertical = 16.dp),
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, null, tint = tint, modifier = Modifier.size(26.dp))
@@ -80,13 +89,31 @@ fun SongOptionsSheet(
     onOpen: (Collection) -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Nocturne.Surface) {
-        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-            Row(Modifier.padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier
+            .navigationBarsPadding()
+            .padding(bottom = 12.dp)) {
+            Row(
+                Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Artwork(song, 56.dp)
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(song.title, color = Nocturne.TextPrimary, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text("${song.artist}  •  ${song.format}", color = Nocturne.TextSecondary, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        song.title,
+                        color = Nocturne.TextPrimary,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        "${song.artist}  •  ${song.format}",
+                        color = Nocturne.TextSecondary,
+                        fontSize = 15.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -96,16 +123,35 @@ fun SongOptionsSheet(
                 if (fav) "Quitar de Me gusta" else "Agregar a Me gusta",
                 tint = if (fav) Nocturne.Lavender else Nocturne.TextPrimary,
             ) { LibraryStore.toggleFavorite(song.id); onDismiss() }
-            SheetRow(Icons.AutoMirrored.Rounded.PlaylistPlay, "Reproducir a continuación") { onPlayNext(); onDismiss() }
-            SheetRow(Icons.AutoMirrored.Rounded.QueueMusic, "Agregar a la cola") { onAddToQueue(); onDismiss() }
-            SheetRow(Icons.AutoMirrored.Rounded.PlaylistAdd, "Agregar a una playlist") { onAddToPlaylist() }
+            SheetRow(
+                Icons.AutoMirrored.Rounded.PlaylistPlay,
+                "Reproducir a continuación"
+            ) { onPlayNext(); onDismiss() }
+            SheetRow(
+                Icons.AutoMirrored.Rounded.QueueMusic,
+                "Agregar a la cola"
+            ) { onAddToQueue(); onDismiss() }
+            SheetRow(
+                Icons.AutoMirrored.Rounded.PlaylistAdd,
+                "Agregar a una playlist"
+            ) { onAddToPlaylist() }
             if (fromPlaylistId != null) {
-                SheetRow(Icons.Rounded.RemoveCircleOutline, "Quitar de esta playlist", tint = Color(0xFFFF8A9A)) {
+                SheetRow(
+                    Icons.Rounded.RemoveCircleOutline,
+                    "Quitar de esta playlist",
+                    tint = Color(0xFFFF8A9A)
+                ) {
                     onRemoveFromPlaylist(); onDismiss()
                 }
             }
-            SheetRow(Icons.Rounded.Album, "Ir al álbum") { onOpen(Collection.AlbumOf(song.albumId)); onDismiss() }
-            SheetRow(Icons.Rounded.Person, "Ir al artista") { onOpen(Collection.ArtistOf(song.artist)); onDismiss() }
+            SheetRow(
+                Icons.Rounded.Album,
+                "Ir al álbum"
+            ) { onOpen(Collection.AlbumOf(song.albumId)); onDismiss() }
+            SheetRow(
+                Icons.Rounded.Person,
+                "Ir al artista"
+            ) { onOpen(Collection.ArtistOf(song.artist)); onDismiss() }
         }
     }
 }
@@ -116,26 +162,43 @@ fun SongOptionsSheet(
 fun AddToPlaylistSheet(songIds: List<Long>, onDismiss: () -> Unit, onDone: (String) -> Unit) {
     var creating by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Nocturne.Surface) {
-        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+        Column(Modifier
+            .navigationBarsPadding()
+            .padding(bottom = 12.dp)) {
             Text(
-                "Agregar a playlist", color = Nocturne.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold,
+                "Agregar a playlist",
+                color = Nocturne.TextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             SheetRow(Icons.Rounded.Add, "Nueva playlist", tint = Nocturne.Cyan) { creating = true }
             LazyColumn(Modifier.heightIn(max = 420.dp)) {
                 items(LibraryStore.playlists, key = { it.id }) { p ->
                     Row(
-                        Modifier.fillMaxWidth().clickable {
-                            LibraryStore.addToPlaylist(p.id, songIds)
-                            onDone("Agregado a ${p.name}")
-                        }.padding(horizontal = 24.dp, vertical = 10.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                LibraryStore.addToPlaylist(p.id, songIds)
+                                onDone("Agregado a ${p.name}")
+                            }
+                            .padding(horizontal = 24.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Artwork(p.songIds.firstOrNull()?.let { com.mimusica.app.data.MusicRepository.song(it) }, 48.dp, corner = 8.dp)
+                        Artwork(
+                            p.songIds.firstOrNull()
+                                ?.let { com.mimusica.app.data.MusicRepository.song(it) },
+                            48.dp,
+                            corner = 8.dp
+                        )
                         Spacer(Modifier.width(16.dp))
                         Column {
                             Text(p.name, color = Nocturne.TextPrimary, fontSize = 18.sp)
-                            Text("${p.songIds.size} canciones", color = Nocturne.TextSecondary, fontSize = 14.sp)
+                            Text(
+                                "${p.songIds.size} canciones",
+                                color = Nocturne.TextSecondary,
+                                fontSize = 14.sp
+                            )
                         }
                     }
                 }
@@ -153,64 +216,87 @@ fun AddToPlaylistSheet(songIds: List<Long>, onDismiss: () -> Unit, onDone: (Stri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int) -> Unit, onOpenWhatsApp: () -> Unit,){
+fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int) -> Unit) {
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Nocturne.Surface) {
         val (songNewsList, whatsappNewsList) = songs.partition { !it.isWhatsApp }
-        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+        var showWhatsApp by remember { mutableStateOf(songNewsList.isEmpty()) }
+        Column(Modifier
+            .navigationBarsPadding()
+            .padding(bottom = 12.dp)) {
             Text(
-                "Novedades de la App",
+                "Novedades",
                 color = Nocturne.TextPrimary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
-        }
-        if (songNewsList.isNotEmpty()) {
-            Text(
-                "${songNewsList.size} Canciones Nuevas!!!!"
-            )
-            LazyColumn(Modifier.heightIn(max = 420.dp)) {
-                itemsIndexed(songNewsList) { index, song ->
-                    Row(
-                        Modifier.fillMaxWidth().clickable {
-                            onPlay(songNewsList, index)
-                        }.padding(horizontal = 24.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Artwork( song , 48.dp, corner = 8.dp)
-                        Spacer(Modifier.width(16.dp))
-                        Column {
-                            Text(song.title, color = Nocturne.TextPrimary, fontSize = 18.sp)
-                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 14.sp)
-                        }
-                    }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 20.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Nocturne.Surface)
+                    .padding(6.dp),
+            ) {
+                listOf(
+                    "Canciones (${songNewsList.size})" to false,
+                    "Audios WhatsApp (${whatsappNewsList.size})" to true
+                ).forEach { (label, isWhatsApp) ->
+                    val selected = showWhatsApp == isWhatsApp
+                    Text(
+                        label, textAlign = TextAlign.Center, fontSize = 19.sp,
+                        color = if (selected) Nocturne.TextPrimary else Nocturne.TextSecondary,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (selected) Nocturne.SurfaceHigher else Color.Transparent)
+                            .clickable { showWhatsApp = isWhatsApp }
+                            .padding(vertical = 12.dp),
+                    )
                 }
             }
-        } else {
-            Text(
-                "No hay ninguna cancion nueva"
-            )
-        }
-        if (whatsappNewsList.isNotEmpty()) {
-            Text(
-                "${whatsappNewsList.size} Canciones Nuevas!!!!"
-            )
-            LazyColumn(Modifier.heightIn(max = 420.dp)) {
-                itemsIndexed(whatsappNewsList) { index, song ->
-                    Row(
-                        Modifier.fillMaxWidth().clickable {
-                            onPlay(whatsappNewsList, index)
-                        }.padding(horizontal = 24.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Artwork( song , 48.dp, corner = 8.dp)
-                        Spacer(Modifier.width(16.dp))
-                        Column {
-                            Text(song.title, color = Nocturne.TextPrimary, fontSize = 18.sp)
-                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 14.sp)
+            val visible = if (showWhatsApp) whatsappNewsList else songNewsList
+            if (visible.isNotEmpty()) {
+                LazyColumn(Modifier.heightIn(max = 420.dp)) {
+                    itemsIndexed(visible) { index, song ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onPlay(visible, index)
+                                }
+                                .padding(horizontal = 24.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Artwork(song, 48.dp, corner = 8.dp)
+                            Spacer(Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    song.title,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Nocturne.TextPrimary,
+                                    fontSize = 18.sp
+                                )
+                                Text(
+                                    song.artist,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Nocturne.TextSecondary,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                Text(
+                    text = if (showWhatsApp) "No hay ningún audio disponible" else "No hay ninguna canción disponible",
+                    color = Nocturne.TextSecondary,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                )
             }
         }
     }
@@ -242,22 +328,52 @@ fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, onConfirm:
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(text) }, enabled = text.isNotBlank()) {
-                Text("Guardar", color = if (text.isNotBlank()) Nocturne.Cyan else Nocturne.TextMuted)
+                Text(
+                    "Guardar",
+                    color = if (text.isNotBlank()) Nocturne.Cyan else Nocturne.TextMuted
+                )
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar", color = Nocturne.TextSecondary) } },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancelar",
+                    color = Nocturne.TextSecondary
+                )
+            }
+        },
     )
 }
 
 @Composable
-fun ConfirmDialog(title: String, message: String, confirm: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun ConfirmDialog(
+    title: String,
+    message: String,
+    confirm: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Nocturne.Surface,
         title = { Text(title, color = Nocturne.TextPrimary) },
         text = { Text(message, color = Nocturne.TextSecondary) },
-        confirmButton = { TextButton(onClick = onConfirm) { Text(confirm, color = Color(0xFFFF8A9A)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar", color = Nocturne.TextSecondary) } },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    confirm,
+                    color = Color(0xFFFF8A9A)
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancelar",
+                    color = Nocturne.TextSecondary
+                )
+            }
+        },
     )
 }
 
