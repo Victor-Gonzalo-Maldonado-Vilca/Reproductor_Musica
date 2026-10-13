@@ -103,7 +103,7 @@ fun NocturneApp(onRescan: () -> Unit) {
                 when {
                     nowPlaying -> nowPlaying = false
                     stack.isNotEmpty() -> stack.removeAt(stack.lastIndex)
-                    else -> tab = Tab.Library
+                    else -> tab = Tab.Home
                 }
             },
             showNews = {
@@ -118,7 +118,7 @@ fun NocturneApp(onRescan: () -> Unit) {
         )
     }
 
-    BackHandler(enabled = nowPlaying || stack.isNotEmpty()) { actions.back() }
+    BackHandler(enabled = nowPlaying || stack.isNotEmpty() || tab != Tab.Home) { actions.back()  }
 
     // Actualiza la barra de progreso mientras suena música.
     LaunchedEffect(PlayerController.isPlaying) {
