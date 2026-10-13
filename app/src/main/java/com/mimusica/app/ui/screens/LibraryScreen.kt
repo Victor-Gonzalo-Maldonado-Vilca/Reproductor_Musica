@@ -127,6 +127,7 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
         item {
             NocturneTopBar(
                 LibraryStore.userName,
+                hasNews = MusicRepository.newSongs.isNotEmpty(),
                 onBell = { actions.message("No tienes notificaciones nuevas") },
                 onAvatar = { actions.goToTab(Tab.Settings) },
             )

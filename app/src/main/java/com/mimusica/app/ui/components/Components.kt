@@ -110,7 +110,7 @@ fun UserAvatar(name: String, size: Dp = 44.dp, onClick: () -> Unit) {
 
 /** Barra superior: logo + "Nocturne" + campana + avatar. */
 @Composable
-fun NocturneTopBar(userName: String, onBell: () -> Unit, onAvatar: () -> Unit) {
+fun NocturneTopBar(userName: String, hasNews: Boolean, onBell: () -> Unit, onAvatar: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -119,10 +119,15 @@ fun NocturneTopBar(userName: String, onBell: () -> Unit, onAvatar: () -> Unit) {
         Spacer(Modifier.width(14.dp))
         Text("Nocturne", color = Nocturne.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
-        Icon(
-            Icons.Rounded.NotificationsNone, "Notificaciones", tint = Nocturne.TextPrimary,
-            modifier = Modifier.size(28.dp).clickable(onClick = onBell),
-        )
+        Box {
+            Icon(
+                Icons.Rounded.NotificationsNone, "Notificaciones", tint = Nocturne.TextPrimary,
+                modifier = Modifier.size(28.dp).clickable(onClick = onBell),
+            )
+            if (hasNews) {
+                Box(Modifier.align(Alignment.TopEnd).size(8.dp).clip(CircleShape).background(Color(0xFFFF5A6E)))
+            }
+        }
         Spacer(Modifier.width(20.dp))
         UserAvatar(userName, onClick = onAvatar)
     }
