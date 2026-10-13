@@ -61,14 +61,15 @@ object MusicRepository {
         val minDuration = if (skipShort) 30_000 else 1
         //Se extraera toda musica que no es corta, ademas de todos los audios de WhatsApp
         val selection =
-            "(${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= ?) " +
-                    "OR (${MediaStore.Audio.Media.DATA} LIKE ?)"
+            "((${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= ?) " +
+                    "OR (${MediaStore.Audio.Media.DATA} LIKE ?)) " +
+                    "AND (${MediaStore.Audio.Media.DATA} NOT LIKE ?)"
         val list = mutableListOf<Song>()
         context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
             selection,
-            arrayOf(minDuration.toString(), "%/WhatsApp%"),
+            arrayOf(minDuration.toString(), "%/WhatsApp%", "%/Recordings%"),
             "${MediaStore.Audio.Media.DATE_ADDED} DESC",
         )?.use { c ->
             val idCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
