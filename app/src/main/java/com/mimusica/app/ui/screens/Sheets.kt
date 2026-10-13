@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
@@ -146,6 +147,71 @@ fun AddToPlaylistSheet(songIds: List<Long>, onDismiss: () -> Unit, onDone: (Stri
             LibraryStore.createPlaylist(name, songIds)
             creating = false
             onDone("Playlist \"$name\" creada")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewsSheet(songs: List<Song>, onDismiss: () -> Unit, onPlay: (List<Song>, Int) -> Unit, onOpenWhatsApp: () -> Unit,){
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Nocturne.Surface) {
+        val (songNewsList, whatsappNewsList) = songs.partition { !it.isWhatsApp }
+        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+            Text(
+                "Novedades de la App",
+                color = Nocturne.TextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+        }
+        if (songNewsList.isNotEmpty()) {
+            Text(
+                "${songNewsList.size} Canciones Nuevas!!!!"
+            )
+            LazyColumn(Modifier.heightIn(max = 420.dp)) {
+                itemsIndexed(songNewsList) { index, song ->
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            onPlay(songNewsList, index)
+                        }.padding(horizontal = 24.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Artwork( song , 48.dp, corner = 8.dp)
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(song.title, color = Nocturne.TextPrimary, fontSize = 18.sp)
+                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
+        } else {
+            Text(
+                "No hay ninguna cancion nueva"
+            )
+        }
+        if (whatsappNewsList.isNotEmpty()) {
+            Text(
+                "${whatsappNewsList.size} Canciones Nuevas!!!!"
+            )
+            LazyColumn(Modifier.heightIn(max = 420.dp)) {
+                itemsIndexed(whatsappNewsList) { index, song ->
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            onPlay(whatsappNewsList, index)
+                        }.padding(horizontal = 24.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Artwork( song , 48.dp, corner = 8.dp)
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(song.title, color = Nocturne.TextPrimary, fontSize = 18.sp)
+                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
         }
     }
 }

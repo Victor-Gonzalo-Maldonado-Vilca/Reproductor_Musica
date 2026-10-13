@@ -39,6 +39,7 @@ import com.mimusica.app.ui.screens.ConfirmDialog
 import com.mimusica.app.ui.screens.HomeScreen
 import com.mimusica.app.ui.screens.LibraryScreen
 import com.mimusica.app.ui.screens.NameDialog
+import com.mimusica.app.ui.screens.NewsSheet
 import com.mimusica.app.ui.screens.NowPlayingScreen
 import com.mimusica.app.ui.screens.PlaylistDetailScreen
 import com.mimusica.app.ui.screens.SearchScreen
@@ -182,6 +183,11 @@ fun NocturneApp(onRescan: () -> Unit) {
             actions.message(msg)
         }
     }
+
+    news?.let { list ->
+        NewsSheet( songs = list, onDismiss = { news = null }, onPlay = {song, index -> PlayerController.play(song, index)}, onOpenWhatsApp = { }, )
+    }
+
     if (creating) {
         NameDialog("Nueva playlist", "", onDismiss = { creating = false }) { name ->
             val p = LibraryStore.createPlaylist(name)
