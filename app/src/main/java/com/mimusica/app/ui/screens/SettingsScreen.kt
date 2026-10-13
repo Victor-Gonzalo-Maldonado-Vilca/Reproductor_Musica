@@ -131,7 +131,7 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
 
         item { Group("ACERCA DE") }
         item { SettingRow(Icons.Rounded.Shield, "Política de privacidad", "Nocturne no recopila tus datos", onClick = { showPrivacy = true }) }
-        item { SettingRow(Icons.Rounded.Info, "Versión", "Nocturne 1.0") }
+        item { SettingRow(Icons.Rounded.Info, "Versión", "Nocturne 3.0") }
     }
 
     if (editingName) {
