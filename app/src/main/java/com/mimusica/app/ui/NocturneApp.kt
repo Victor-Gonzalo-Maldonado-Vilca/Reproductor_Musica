@@ -100,9 +100,13 @@ fun NocturneApp(onRescan: () -> Unit) {
                 }
             },
             showNews = {
-                news = MusicRepository.newSongs
-                val all = (MusicRepository.songs + MusicRepository.whatsappAudios).map { it.id }
-                LibraryStore.markAllSeen(all)
+                if (MusicRepository.newSongs.isEmpty()) {
+                    scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar("No tiene ninguna notificación disponible") }
+                } else {
+                    news = MusicRepository.newSongs
+                    val all = (MusicRepository.songs + MusicRepository.whatsappAudios).map { it.id }
+                    LibraryStore.markAllSeen(all)
+                }
             },
         )
     }
