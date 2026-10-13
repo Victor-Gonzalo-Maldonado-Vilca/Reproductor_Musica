@@ -32,6 +32,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.DropdownMenu
@@ -71,7 +72,7 @@ import com.mimusica.app.ui.components.Tab
 import com.mimusica.app.ui.components.WaveBars
 import com.mimusica.app.ui.theme.Nocturne
 
-private enum class LibraryFilter(val label: String) { Playlists("Playlists"), Artists("Artistas"), Albums("Álbumes"), Downloads("Descargas") }
+private enum class LibraryFilter(val label: String) { Playlists("Playlists"), Artists("Artistas"), Albums("Álbumes"), Downloads("Descargas"), WhatsApp("WhatsApp") }
 
 /** Un elemento de la biblioteca (playlist, álbum o artista). */
 private data class LibraryItem(
@@ -112,6 +113,7 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
             )
         }
         LibraryFilter.Downloads -> emptyList()
+        LibraryFilter.WhatsApp -> emptyList()
     }.let { list ->
         if (filter == LibraryFilter.Playlists) list // los fijados primero, ya vienen ordenados
         else if (sortRecent) list.sortedByDescending { it.sortTime } else list.sortedBy { it.title.lowercase() }
@@ -119,6 +121,8 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
     val downloads = songs.filter { it.isDownload }
         .let { if (sortRecent) it else it.sortedBy { s -> s.title.lowercase() } }
 
+    val whatsapp = MusicRepository.whatsappAudios
+        .let { if (sortRecent) it else it.sortedBy { s -> s.title.lowercase() } }
     LazyColumn(contentPadding = contentPadding) {
         item {
             NocturneTopBar(
@@ -150,7 +154,12 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
                 LibraryFilter.entries.forEach { f ->
                     NocturneChip(
                         f.label, selected = f == filter,
-                        leading = if (f == LibraryFilter.Downloads) Icons.Rounded.DownloadForOffline else null,
+                        leading = when (f) {
+                            LibraryFilter.WhatsApp -> Icons.Rounded.Share
+                            LibraryFilter.Downloads -> Icons.Rounded.DownloadForOffline
+                            else -> null
+                        }
+
                     ) { filter = f }
                 }
             }
@@ -186,6 +195,18 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
                         isCurrent = PlayerController.currentSongId == song.id,
                         isPlaying = PlayerController.isPlaying,
                         onClick = { PlayerController.play(downloads, downloads.indexOf(song)) },
+                        onMore = { actions.songOptions(song, null, -1) },
+                    )
+                }
+            }
+            filter == LibraryFilter.WhatsApp -> {
+                if (whatsapp.isEmpty()) item { InfoCard("No hay audios en la carpeta de WhatsApp.") }
+                items(whatsapp, key = { "wa" + it.id }) { song ->
+                    SongRow(
+                        song, number = null,
+                        isCurrent = PlayerController.currentSongId == song.id,
+                        isPlaying = PlayerController.isPlaying,
+                        onClick = { PlayerController.play(whatsapp, whatsapp.indexOf(song)) },
                         onMore = { actions.songOptions(song, null, -1) },
                     )
                 }
