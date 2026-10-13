@@ -81,7 +81,7 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
     }
     LazyColumn(contentPadding = contentPadding) {
         item {
-            NocturneTopBar(name, MusicRepository.newSongs.isNotEmpty(), onBell = { actions.message("No tienes notificaciones nuevas") }, onAvatar = { actions.goToTab(Tab.Settings) })
+            NocturneTopBar(name, MusicRepository.newSongs.isNotEmpty(), onBell = { actions.showNews() }, onAvatar = { actions.goToTab(Tab.Settings) })
         }
         item {
             Column (Modifier.padding(start = 20.dp, top = 16.dp, bottom = 20.dp), horizontalAlignment = Alignment.Start) {

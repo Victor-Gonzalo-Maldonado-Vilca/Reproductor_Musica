@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mimusica.app.data.Collection
 import com.mimusica.app.data.LibraryStore
+import com.mimusica.app.data.MusicRepository
 import com.mimusica.app.data.Song
 import com.mimusica.app.playback.PlayerController
 import com.mimusica.app.ui.components.MiniPlayer
@@ -59,6 +60,7 @@ class AppActions(
     val goToTab: (Tab) -> Unit,
     val message: (String) -> Unit,
     val back: () -> Unit,
+    val showNews: () -> Unit
 )
 
 private data class SongMenu(val song: Song, val playlistId: Long?, val index: Int)
@@ -74,6 +76,7 @@ fun NocturneApp(onRescan: () -> Unit) {
     var creating by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf<Long?>(null) }
     var deleting by remember { mutableStateOf<Long?>(null) }
+    var news by remember { mutableStateOf<List<Song>?>(null) }
 
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -95,6 +98,11 @@ fun NocturneApp(onRescan: () -> Unit) {
                     stack.isNotEmpty() -> stack.removeAt(stack.lastIndex)
                     else -> tab = Tab.Library
                 }
+            },
+            showNews = {
+                news = MusicRepository.newSongs
+                val all = (MusicRepository.songs + MusicRepository.whatsappAudios).map { it.id }
+                LibraryStore.markAllSeen(all)
             },
         )
     }
