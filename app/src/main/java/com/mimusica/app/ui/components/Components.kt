@@ -434,3 +434,44 @@ fun NocturneBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
         }
     }
 }
+
+/**
+ * Aviso flotante de Nocturne: tarjeta oscura con borde degradado y un ícono en un círculo
+ * con el degradado de la app. Si no hay ícono, muestra las barras del logo.
+ */
+@Composable
+fun NocturneToast(message: String, icon: ImageVector?) {
+    val shape = RoundedCornerShape(20.dp)
+    Row(
+        Modifier
+            .padding(horizontal = 20.dp)
+            .shadow(24.dp, shape, ambientColor = Nocturne.Purple, spotColor = Nocturne.Purple)
+            .clip(shape)
+            .background(Nocturne.SurfaceHigh)
+            .border(
+                1.dp,
+                Brush.linearGradient(listOf(Nocturne.Purple.copy(alpha = 0.7f), Nocturne.Cyan.copy(alpha = 0.7f))),
+                shape,
+            )
+            .padding(start = 10.dp, end = 18.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.size(36.dp).clip(CircleShape).background(Nocturne.Accent),
+            contentAlignment = Alignment.Center,
+        ) {
+            val dark = Color(0xFF1A1440)
+            if (icon != null) Icon(icon, null, tint = dark, modifier = Modifier.size(20.dp))
+            else WaveBars(Modifier.size(18.dp), Brush.linearGradient(listOf(dark, dark)))
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            message,
+            color = Nocturne.TextPrimary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}

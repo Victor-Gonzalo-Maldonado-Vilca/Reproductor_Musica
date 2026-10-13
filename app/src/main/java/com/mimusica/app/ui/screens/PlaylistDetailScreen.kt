@@ -225,10 +225,13 @@ fun PlaylistDetailScreen(collection: Collection, actions: AppActions, contentPad
                     "Guardar en la biblioteca", size = 70.dp,
                     tint = Nocturne.Lavender,
                 ) {
-                    if (collection is Collection.Favorites) actions.message("Esta lista siempre está en tu biblioteca")
+                    if (collection is Collection.Favorites) actions.notify("Esta lista siempre está en tu biblioteca", Icons.Rounded.Favorite)
                     else {
                         LibraryStore.togglePinned(collection.key)
-                        actions.message(if (LibraryStore.isPinned(collection.key)) "Guardado en tu biblioteca" else "Quitado de tu biblioteca")
+                        actions.notify(
+                            if (LibraryStore.isPinned(collection.key)) "Guardado en tu biblioteca" else "Quitado de tu biblioteca",
+                            if (LibraryStore.isPinned(collection.key)) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        )
                     }
                 }
                 Spacer(Modifier.width(8.dp))
@@ -238,6 +241,7 @@ fun PlaylistDetailScreen(collection: Collection, actions: AppActions, contentPad
                 Spacer(Modifier.width(8.dp))
                 CircleIconButton(Icons.Rounded.Shuffle, "Aleatorio", size = 70.dp) {
                     PlayerController.play(songs, shuffled = true)
+                    if (songs.isNotEmpty()) actions.notify("Reproduciendo en aleatorio", Icons.Rounded.Shuffle)
                 }
                 Spacer(Modifier.weight(1f))
                 GradientCircleButton(
@@ -293,9 +297,14 @@ fun PlaylistDetailScreen(collection: Collection, actions: AppActions, contentPad
                     number = index + 1,
                     isCurrent = PlayerController.currentSongId == song.id,
                     isPlaying = PlayerController.isPlaying,
-                    onReorder = playlistId?.let { id -> { delta -> LibraryStore.moveInPlaylist(id, index, index + delta) } },
+                    onReorder = playlistId?.let { id ->
+                        { delta ->
+                            // Se mueve junto a la canción vecina visible, por ID (ver LibraryStore.moveInPlaylist).
+                            songs.getOrNull(index + delta)?.let { target -> LibraryStore.moveInPlaylist(id, song.id, target.id) }
+                        }
+                    },
                     onClick = { PlayerController.play(songs, index) },
-                    onMore = { actions.songOptions(song, playlistId, index) },
+                    onMore = { actions.songOptions(song, playlistId) },
                 )
             }
         }

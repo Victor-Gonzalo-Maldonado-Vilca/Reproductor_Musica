@@ -119,7 +119,7 @@ fun SearchScreen(actions: AppActions, contentPadding: PaddingValues) {
                 isCurrent = PlayerController.currentSongId == s.id,
                 isPlaying = PlayerController.isPlaying,
                 onClick = { PlayerController.play(songs, songs.indexOf(s)) },
-                onMore = { actions.songOptions(s, null, -1) },
+                onMore = { actions.songOptions(s, null) },
             )
         }
     }

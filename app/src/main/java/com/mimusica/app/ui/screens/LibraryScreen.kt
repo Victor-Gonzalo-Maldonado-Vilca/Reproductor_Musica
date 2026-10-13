@@ -196,7 +196,7 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
                         isCurrent = PlayerController.currentSongId == song.id,
                         isPlaying = PlayerController.isPlaying,
                         onClick = { PlayerController.play(downloads, downloads.indexOf(song)) },
-                        onMore = { actions.songOptions(song, null, -1) },
+                        onMore = { actions.songOptions(song, null) },
                     )
                 }
             }
@@ -208,7 +208,7 @@ fun LibraryScreen(actions: AppActions, contentPadding: PaddingValues) {
                         isCurrent = PlayerController.currentSongId == song.id,
                         isPlaying = PlayerController.isPlaying,
                         onClick = { PlayerController.play(whatsapp, whatsapp.indexOf(song)) },
-                        onMore = { actions.songOptions(song, null, -1) },
+                        onMore = { actions.songOptions(song, null) },
                     )
                 }
             }

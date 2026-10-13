@@ -26,7 +26,6 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.Whatsapp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -155,6 +154,7 @@ fun HomeScreen(actions: AppActions, contentPadding: PaddingValues) {
                     }
                     GradientCircleButton(Icons.Rounded.Shuffle, "Aleatorio", size = 64.dp) {
                         PlayerController.play(songs, shuffled = true)
+                        actions.notify("Mezcla nocturna en aleatorio", Icons.Rounded.Shuffle)
                     }
                 }
             }

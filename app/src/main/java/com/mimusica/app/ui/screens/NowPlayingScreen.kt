@@ -106,7 +106,7 @@ fun NowPlayingScreen(actions: AppActions) {
                 }
                 Icon(
                     Icons.Rounded.MoreVert, "Opciones", tint = Nocturne.TextPrimary,
-                    modifier = Modifier.clip(CircleShape).clickable { actions.songOptions(song, null, -1) }.padding(8.dp).size(28.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { actions.songOptions(song, null) }.padding(8.dp).size(28.dp),
                 )
             }
 
@@ -133,7 +133,12 @@ fun NowPlayingScreen(actions: AppActions) {
                     }
                     Text(
                         song.artist, color = Nocturne.TextSecondary, fontSize = 19.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.clickable { actions.openCollection(com.mimusica.app.data.Collection.ArtistOf(song.artist)) },
+                        modifier = Modifier.clickable {
+                            actions.openCollection(
+                                if (song.isWhatsApp) com.mimusica.app.data.Collection.WhatsApp
+                                else com.mimusica.app.data.Collection.ArtistOf(song.artist),
+                            )
+                        },
                     )
                 }
                 val fav = LibraryStore.isFavorite(song.id)
@@ -171,7 +176,10 @@ fun NowPlayingScreen(actions: AppActions) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ToggleIcon(Icons.Rounded.Shuffle, "Aleatorio", PlayerController.shuffle) { PlayerController.toggleShuffle() }
+                ToggleIcon(Icons.Rounded.Shuffle, "Aleatorio", PlayerController.shuffle) {
+                    val on = PlayerController.toggleShuffle()
+                    actions.notify(if (on) "Aleatorio activado" else "Aleatorio desactivado", Icons.Rounded.Shuffle)
+                }
                 ControlIcon(Icons.Rounded.SkipPrevious, "Anterior") { PlayerController.previous() }
                 GradientCircleButton(
                     if (PlayerController.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
@@ -182,7 +190,13 @@ fun NowPlayingScreen(actions: AppActions) {
                 ToggleIcon(
                     if (PlayerController.repeatMode == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
                     "Repetir", PlayerController.repeatMode != Player.REPEAT_MODE_OFF,
-                ) { PlayerController.cycleRepeat() }
+                ) {
+                    when (PlayerController.cycleRepeat()) {
+                        Player.REPEAT_MODE_ALL -> actions.notify("Repetir toda la lista", Icons.Rounded.Repeat)
+                        Player.REPEAT_MODE_ONE -> actions.notify("Repetir esta canción", Icons.Rounded.RepeatOne)
+                        else -> actions.notify("Repetición desactivada", Icons.Rounded.Repeat)
+                    }
+                }
             }
 
             // ---------- Pie: calidad y cola ----------

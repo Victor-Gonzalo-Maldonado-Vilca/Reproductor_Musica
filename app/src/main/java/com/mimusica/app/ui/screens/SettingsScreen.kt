@@ -48,9 +48,10 @@ import com.mimusica.app.ui.components.UserAvatar
 import com.mimusica.app.ui.theme.Nocturne
 
 @Composable
-fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan: () -> Unit) {
+fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan: (onDone: () -> Unit) -> Unit) {
     var editingName by remember { mutableStateOf(false) }
     var showPrivacy by remember { mutableStateOf(false) }
+    var scanning by remember { mutableStateOf(false) }
     val songs = MusicRepository.songs
 
     LazyColumn(contentPadding = contentPadding) {
@@ -96,7 +97,10 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
             ) {
                 Switch(
                     checked = LibraryStore.skipShortTracks,
-                    onCheckedChange = { LibraryStore.setSkipShort(it); onRescan() },
+                    onCheckedChange = { hide ->
+                        LibraryStore.setSkipShort(hide)
+                        onRescan { if (!hide) MusicRepository.markShortTracksSeen() }
+                    },
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = Nocturne.Purple,
                         checkedThumbColor = androidx.compose.ui.graphics.Color.White,
@@ -110,8 +114,17 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
         item {
             SettingRow(
                 Icons.Rounded.Refresh, "Volver a escanear",
-                "${songs.size} canciones  •  ${formatSize(songs.sumOf { it.sizeBytes })}",
-                onClick = { onRescan(); actions.message("Biblioteca actualizada") },
+                if (scanning) "Buscando música en tu teléfono…"
+                else "${songs.size} canciones  •  ${formatSize(songs.sumOf { it.sizeBytes })}",
+                onClick = {
+                    if (!scanning) {
+                        scanning = true
+                        onRescan {
+                            scanning = false
+                            actions.notify("Biblioteca actualizada · ${MusicRepository.songs.size} canciones", Icons.Rounded.Refresh)
+                        }
+                    }
+                },
             )
         }
 

@@ -9,6 +9,9 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/** Duración mínima de una canción cuando está activo "Ocultar audios cortos". */
+const val SHORT_TRACK_MS = 30_000L
+
 /** Lee la música guardada en el teléfono a través de MediaStore. */
 object MusicRepository {
 
@@ -35,6 +38,15 @@ object MusicRepository {
 
     fun song(id: Long): Song? = songs.firstOrNull { it.id == id } ?: whatsappAudios.firstOrNull { it.id == id}
 
+    /**
+     * Al desactivar "Ocultar audios cortos" aparecen archivos que ya estaban en el teléfono:
+     * se marcan como vistos para que la campana no los anuncie como novedades.
+     */
+    fun markShortTracksSeen() {
+        val short = newSongs.filter { !it.isWhatsApp && it.durationMs < SHORT_TRACK_MS }.map { it.id }
+        if (short.isNotEmpty()) LibraryStore.markAllSeen(LibraryStore.knownSongs + short)
+    }
+
     suspend fun load(context: Context, skipShort: Boolean) {
         val alls = withContext(Dispatchers.IO) { query(context, skipShort) }
         val (songsList, whatsapAudiosList) = alls.partition {!it.isWhatsApp}
@@ -58,7 +70,7 @@ object MusicRepository {
             MediaStore.Audio.Media.MIME_TYPE,
             MediaStore.Audio.Media.DATA,
         )
-        val minDuration = if (skipShort) 30_000 else 1
+        val minDuration = if (skipShort) SHORT_TRACK_MS else 1L
         //Se extraera toda musica que no es corta, ademas de todos los audios de WhatsApp
         val selection =
             "((${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= ?) " +

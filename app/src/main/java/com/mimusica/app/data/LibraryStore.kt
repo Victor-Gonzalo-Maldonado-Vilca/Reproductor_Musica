@@ -2,7 +2,6 @@ package com.mimusica.app.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.collection.MutableScatterMap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,8 +19,7 @@ object LibraryStore {
         private set
     var recents by mutableStateOf<List<Long>>(emptyList())
         private set
-
-    var knownSongs by mutableStateOf<List<Long>>(emptyList())
+    var knownSongs by mutableStateOf<Set<Long>>(emptySet())
         private set
     var pinned by mutableStateOf<Set<String>>(emptySet())
         private set
@@ -29,12 +27,13 @@ object LibraryStore {
         private set
     var userName by mutableStateOf("")
         private set
+
     fun init(context: Context) {
         if (::prefs.isInitialized) return
         prefs = context.getSharedPreferences("nocturne", Context.MODE_PRIVATE)
         favorites = readIds("favorites")
         recents = readIds("recents")
-        knownSongs = readIds("known_songs")
+        knownSongs = readIds("known_songs").toSet()
         pinned = prefs.getStringSet("pinned", emptySet())!!.toSet()
         skipShortTracks = prefs.getBoolean("skip_short", true)
         userName = prefs.getString("user_name", "") ?: ""
@@ -68,14 +67,14 @@ object LibraryStore {
     }
 
     // ---------- Novedades ----------
-    fun markAllSeen(ids: List<Long>) {
-        knownSongs = ids
-        writeIds("known_songs", knownSongs)
+    fun markAllSeen(ids: Iterable<Long>) {
+        knownSongs = ids.toSet()
+        writeIds("known_songs", knownSongs.toList())
     }
 
     val hasKnownSongs: Boolean get() = prefs.contains("known_songs")
-    // ---------- Colecciones fijadas ----------
 
+    // ---------- Colecciones fijadas ----------
     fun isPinned(key: String) = key in pinned
 
     fun togglePinned(key: String) {
@@ -106,11 +105,16 @@ object LibraryStore {
     fun addToPlaylist(id: Long, songIds: List<Long>) =
         update(id) { p -> p.copy(songIds = p.songIds + songIds.filterNot { it in p.songIds }) }
 
-    fun removeFromPlaylist(id: Long, index: Int) =
-        update(id) { p -> p.copy(songIds = p.songIds.filterIndexed { i, _ -> i != index }) }
+    // Se trabaja por ID y no por posición: la playlist guardada puede tener canciones que ya no
+    // existen en el teléfono, así que la posición en pantalla no coincide con la guardada.
+    fun removeFromPlaylist(id: Long, songId: Long) =
+        update(id) { p -> p.copy(songIds = p.songIds - songId) }
 
-    fun moveInPlaylist(id: Long, from: Int, to: Int) = update(id) { p ->
-        if (from !in p.songIds.indices || to !in p.songIds.indices) return@update p
+    /** Mueve [songId] al lugar que ocupa [targetSongId] (la canción vecina visible en pantalla). */
+    fun moveInPlaylist(id: Long, songId: Long, targetSongId: Long) = update(id) { p ->
+        val from = p.songIds.indexOf(songId)
+        val to = p.songIds.indexOf(targetSongId)
+        if (from == -1 || to == -1) return@update p
         val list = p.songIds.toMutableList()
         list.add(to, list.removeAt(from))
         p.copy(songIds = list)

@@ -48,14 +48,18 @@ class MainActivity : ComponentActivity() {
                     granted = result[audioPermission] == true
                     denied = !granted
                 }
-                val rescan: () -> Unit = {
-                    scope.launch { MusicRepository.load(this@MainActivity, LibraryStore.skipShortTracks) }
+                // Vuelve a leer la música; onDone se llama cuando la carga terminó de verdad.
+                val rescan: (onDone: () -> Unit) -> Unit = { onDone ->
+                    scope.launch {
+                        MusicRepository.load(this@MainActivity, LibraryStore.skipShortTracks)
+                        onDone()
+                    }
                 }
 
                 if (granted) {
                     LaunchedEffect(Unit) {
                         PlayerController.connect(this@MainActivity)
-                        rescan()
+                        rescan {}
                     }
                     NocturneApp(onRescan = rescan)
                 } else {

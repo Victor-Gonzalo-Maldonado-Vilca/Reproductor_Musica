@@ -26,6 +26,9 @@ object PlayerController {
     private var future: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
 
+    /** Reproducción pedida antes de que el reproductor terminara de conectarse. */
+    private var pendingPlay: (() -> Unit)? = null
+
     var currentSongId by mutableStateOf<Long?>(null)
         private set
     var isPlaying by mutableStateOf(false)
@@ -60,6 +63,7 @@ object PlayerController {
             controller = runCatching { f.get() }.getOrNull()?.also {
                 it.addListener(listener)
                 sync(it)
+                pendingPlay?.let { play -> pendingPlay = null; play() }
             }
         }, ContextCompat.getMainExecutor(context))
     }
@@ -80,8 +84,12 @@ object PlayerController {
     }
 
     fun play(songs: List<Song>, startIndex: Int = 0, shuffled: Boolean = false) {
-        val c = controller ?: return
         if (songs.isEmpty()) return
+        val c = controller ?: run {
+            // Aún se está conectando (pasa en el primer segundo tras abrir la app): se reproduce al conectar.
+            pendingPlay = { play(songs, startIndex, shuffled) }
+            return
+        }
         c.shuffleModeEnabled = shuffled
         val start = if (shuffled) songs.indices.random() else startIndex.coerceIn(songs.indices)
         c.setMediaItems(songs.map { it.toMediaItem() }, start, 0L)
@@ -123,18 +131,22 @@ object PlayerController {
         positionMs = ms
     }
 
-    fun toggleShuffle() {
-        controller?.let { it.shuffleModeEnabled = !it.shuffleModeEnabled }
+    /** Activa o desactiva el modo aleatorio y devuelve el estado nuevo. */
+    fun toggleShuffle(): Boolean {
+        val c = controller ?: return shuffle
+        c.shuffleModeEnabled = !c.shuffleModeEnabled
+        return c.shuffleModeEnabled
     }
 
-    fun cycleRepeat() {
-        controller?.let {
-            it.repeatMode = when (it.repeatMode) {
-                Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
-                Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
-                else -> Player.REPEAT_MODE_OFF
-            }
+    /** Pasa a la siguiente opción de repetición (no → todo → una) y devuelve la nueva. */
+    fun cycleRepeat(): Int {
+        val c = controller ?: return repeatMode
+        c.repeatMode = when (c.repeatMode) {
+            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+            else -> Player.REPEAT_MODE_OFF
         }
+        return c.repeatMode
     }
 
     private fun sync(p: Player) {

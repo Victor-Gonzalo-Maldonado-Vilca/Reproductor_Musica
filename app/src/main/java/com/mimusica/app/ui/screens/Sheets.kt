@@ -144,12 +144,19 @@ fun SongOptionsSheet(
                     onRemoveFromPlaylist(); onDismiss()
                 }
             }
-            SheetRow(
-                Icons.Rounded.Album, "Ir al álbum"
-            ) { onOpen(Collection.AlbumOf(song.albumId)); onDismiss() }
-            SheetRow(
-                Icons.Rounded.Person, "Ir al artista"
-            ) { onOpen(Collection.ArtistOf(song.artist)); onDismiss() }
+            if (song.isWhatsApp) {
+                // Los audios de WhatsApp no tienen álbum ni artista reales: llevamos a su sección.
+                SheetRow(
+                    Icons.Rounded.Share, "Ir a Audios de WhatsApp"
+                ) { onOpen(Collection.WhatsApp); onDismiss() }
+            } else {
+                SheetRow(
+                    Icons.Rounded.Album, "Ir al álbum"
+                ) { onOpen(Collection.AlbumOf(song.albumId)); onDismiss() }
+                SheetRow(
+                    Icons.Rounded.Person, "Ir al artista"
+                ) { onOpen(Collection.ArtistOf(song.artist)); onDismiss() }
+            }
         }
     }
 }
