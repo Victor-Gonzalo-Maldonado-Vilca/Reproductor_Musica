@@ -2,6 +2,7 @@ package com.mimusica.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -56,6 +57,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,7 +94,10 @@ fun NowPlayingScreen(actions: AppActions) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF231C45), Color(0xFF141A26), Nocturne.Background))),
+            .background(Brush.verticalGradient(listOf(Color(0xFF231C45), Color(0xFF141A26), Nocturne.Background)))
+            // El reproductor se dibuja encima de las demás pantallas: sin esto, un toque en una zona
+            // sin botón (la carátula, el título…) atravesaba y activaba lo que hay debajo.
+            .pointerInput(Unit) { detectTapGestures { } },
     ) {
         Column(
             Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp),

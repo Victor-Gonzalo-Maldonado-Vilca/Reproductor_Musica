@@ -58,6 +58,7 @@ object PlayerController {
     private val sleepRunnable = Runnable {
         controller?.pause()
         sleepEndsAt = null
+        releaseIfPending()
     }
 
     /** Momento (en [SystemClock.elapsedRealtime]) en que se pausará la música, o null si no hay temporizador. */
@@ -99,6 +100,7 @@ object PlayerController {
             if (sleepAtEndOfSong && ended) {
                 controller?.pause()
                 sleepAtEndOfSong = false
+                releaseIfPending()
             }
             saveSession()
         }
@@ -109,11 +111,21 @@ object PlayerController {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             // Se acabó la cola entera: ya no queda canción por esperar.
-            if (playbackState == Player.STATE_ENDED) sleepAtEndOfSong = false
+            if (playbackState == Player.STATE_ENDED) {
+                sleepAtEndOfSong = false
+                releaseIfPending()
+            }
         }
     }
 
+    /**
+     * La app se cerró con un temporizador activo: la conexión se mantiene hasta que el
+     * temporizador pause la música (sin conexión, no habría a quién pedirle la pausa).
+     */
+    private var releasePending = false
+
     fun connect(context: Context) {
+        releasePending = false
         if (future != null) return
         val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val f = MediaController.Builder(context, token).buildAsync()
@@ -128,6 +140,20 @@ object PlayerController {
     }
 
     fun release() {
+        if (sleepTimerActive) {
+            releasePending = true
+            return
+        }
+        releaseNow()
+    }
+
+    private fun releaseIfPending() {
+        // Se posterga para no soltar el controller en medio de uno de sus propios avisos.
+        if (releasePending) handler.post { if (releasePending) releaseNow() }
+    }
+
+    private fun releaseNow() {
+        releasePending = false
         controller?.removeListener(listener)
         future?.let { MediaController.releaseFuture(it) }
         future = null
