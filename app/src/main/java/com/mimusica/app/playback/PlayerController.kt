@@ -23,6 +23,7 @@ import com.mimusica.app.data.MusicRepository
 import com.mimusica.app.data.Song
 
 data class QueueItem(val index: Int, val songId: Long)
+
 /** Conecta la interfaz con el servicio de reproducción y expone su estado a Compose. */
 object PlayerController {
 
@@ -93,11 +94,17 @@ object PlayerController {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             mediaItem?.mediaId?.toLongOrNull()?.let { LibraryStore.addRecent(it) }
             // La canción terminó sola (no fue un salto del usuario): si había que parar al final, se pausa.
-            val ended = reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
+            val ended =
+                reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
             if (sleepAtEndOfSong && ended) {
                 controller?.pause()
                 sleepAtEndOfSong = false
             }
+            saveSession()
+        }
+
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            if (!isPlaying) saveSession()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -217,6 +224,14 @@ object PlayerController {
             i = timeline.getNextWindowIndex(i, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled)
         }
         queue = items
+    }
+
+    private fun saveSession() {
+        val c = controller ?: return
+        val ids =
+            (0 until c.mediaItemCount).mapNotNull { c.getMediaItemAt(it).mediaId.toLongOrNull() }
+        if (ids.isEmpty()) return
+        LibraryStore.saveSession(ids, c.currentMediaItemIndex, c.currentPosition)
     }
 
     private fun Song.toMediaItem(): MediaItem = MediaItem.Builder()
