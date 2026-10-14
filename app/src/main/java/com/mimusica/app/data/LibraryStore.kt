@@ -5,8 +5,11 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.mimusica.app.data.MusicRepository.songs
 import org.json.JSONArray
 import org.json.JSONObject
+
+data class LastSession(val songIds: List<Long>, val index: Int, val positionMs: Long)
 
 /** Guarda en el teléfono los favoritos, las playlists, el historial y los ajustes. */
 object LibraryStore {
@@ -118,6 +121,25 @@ object LibraryStore {
         val list = p.songIds.toMutableList()
         list.add(to, list.removeAt(from))
         p.copy(songIds = list)
+    }
+
+    // ---------- Última sesión ----------
+    fun saveSession(songIds: List<Long>, index: Int, positionMs: Long) {
+        writeIds("session_songs", songIds)
+        prefs.edit()
+            .putInt("session_index", index)
+            .putLong("session_position", positionMs)
+            .apply()
+    }
+
+    fun loadSession(): LastSession? {
+        val ids = readIds("session_songs")
+        if (ids.isEmpty()) return null
+        return LastSession(
+            songIds = ids,
+            index = prefs.getInt("session_index", 0),
+            positionMs = prefs.getLong("session_position", 0L),
+        )
     }
 
     // ---------- Ajustes ----------
