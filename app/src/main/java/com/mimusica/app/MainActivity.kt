@@ -59,7 +59,9 @@ class MainActivity : ComponentActivity() {
                 if (granted) {
                     LaunchedEffect(Unit) {
                         PlayerController.connect(this@MainActivity)
-                        rescan {}
+                        rescan {
+                            PlayerController.restoreLastSession()
+                        }
                     }
                     NocturneApp(onRescan = rescan)
                 } else {

@@ -131,11 +131,12 @@ object PlayerController {
         val f = MediaController.Builder(context, token).buildAsync()
         future = f
         f.addListener({
-            controller = runCatching { f.get() }.getOrNull()?.also {
-                it.addListener(listener)
-                sync(it)
-                pendingPlay?.let { play -> pendingPlay = null; play() }
-            }
+            val c = runCatching { f.get() }.getOrNull() ?: return@addListener
+            // Primero se guarda en `controller`: lo pendiente (play, restaurar sesión) lo necesita.
+            controller = c
+            c.addListener(listener)
+            sync(c)
+            pendingPlay?.let { play -> pendingPlay = null; play() }
         }, ContextCompat.getMainExecutor(context))
     }
 
@@ -180,6 +181,21 @@ object PlayerController {
         c.setMediaItems(songs.map { it.toMediaItem() }, start, 0L)
         c.prepare()
         c.play()
+    }
+
+    /** Carga lo último que sonaba, en pausa, para seguir donde se quedó. */
+    fun restoreLastSession() {
+        val c = controller ?: run {
+            pendingPlay = { restoreLastSession() }
+            return
+        }
+        if (c.mediaItemCount > 0) return
+        val session = LibraryStore.loadSession() ?: return
+        val songs = session.songIds.mapNotNull { MusicRepository.song(it) }
+        if (songs.isEmpty()) return
+        val index = session.index.coerceIn(songs.indices)
+        c.setMediaItems(songs.map { it.toMediaItem() }, index, session.positionMs)
+        c.prepare()
     }
 
     fun playNext(song: Song) {
