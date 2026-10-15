@@ -54,6 +54,7 @@ import com.mimusica.app.ui.screens.PlaylistDetailScreen
 import com.mimusica.app.ui.screens.SearchScreen
 import com.mimusica.app.ui.screens.SettingsScreen
 import com.mimusica.app.ui.screens.SongOptionsSheet
+import com.mimusica.app.ui.screens.SpeedSheet
 import com.mimusica.app.ui.theme.Nocturne
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -99,6 +100,7 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
     var renaming by remember { mutableStateOf<Long?>(null) }
     var deleting by remember { mutableStateOf<Long?>(null) }
     var news by remember { mutableStateOf<List<Song>?>(null) }
+    var showSpeed by remember { mutableStateOf(false) }
 
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -142,7 +144,7 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
         )
     }
 
-    BackHandler(enabled = nowPlaying || stack.isNotEmpty() || tab != Tab.Home) { actions.back()  }
+    BackHandler(enabled = nowPlaying || stack.isNotEmpty() || tab != Tab.Home) { actions.back() }
 
     // Actualiza la barra de progreso mientras suena música.
     LaunchedEffect(PlayerController.isPlaying) {
@@ -153,16 +155,20 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
     }
 
     val current = PlayerController.currentSong
-    Box(Modifier
-        .fillMaxSize()
-        .background(Nocturne.Background)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Nocturne.Background)
+    ) {
         Column(Modifier.fillMaxSize()) {
             Box(Modifier.weight(1f)) {
                 val padding = PaddingValues(bottom = 16.dp)
                 val top = stack.lastOrNull()
-                Box(Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                ) {
                     if (top != null) {
                         PlaylistDetailScreen(top, actions, padding)
                     } else when (tab) {
@@ -196,8 +202,14 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
         // Con el reproductor abierto el aviso va arriba, para no tapar sus controles.
         SnackbarHost(
             snackbar,
-            if (nowPlaying) Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp)
-            else Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = if (current != null) 140.dp else 72.dp),
+            if (nowPlaying) Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 72.dp)
+            else Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = if (current != null) 140.dp else 72.dp),
         ) { data ->
             NocturneToast(data.visuals.message, (data.visuals as? ToastVisuals)?.icon)
         }
@@ -218,7 +230,15 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
                 actions.notify("Agregada a la cola", Icons.AutoMirrored.Rounded.QueueMusic)
             },
             onAddToPlaylist = { songMenu = null; addToPlaylist = listOf(m.song.id) },
-            onRemoveFromPlaylist = { m.playlistId?.let { LibraryStore.removeFromPlaylist(it, m.song.id) } },
+            onSpeed = { songMenu = null; showSpeed = true },
+            onRemoveFromPlaylist = {
+                m.playlistId?.let {
+                    LibraryStore.removeFromPlaylist(
+                        it,
+                        m.song.id
+                    )
+                }
+            },
             onOpen = { actions.openCollection(it) },
         )
     }
@@ -227,6 +247,9 @@ fun NocturneApp(onRescan: (onDone: () -> Unit) -> Unit) {
             addToPlaylist = null
             actions.notify(msg, Icons.AutoMirrored.Rounded.PlaylistAdd)
         }
+    }
+    if (showSpeed) {
+        SpeedSheet(onDismiss = { showSpeed = false })
     }
 
     addingSongsTo?.let { id ->

@@ -48,6 +48,9 @@ object PlayerController {
     var queue by mutableStateOf<List<QueueItem>>(emptyList())
         private set
 
+    var speed by mutableStateOf(1f)
+        private set
+
     val currentSong: Song? get() = currentSongId?.let { MusicRepository.song(it) }
 
     // ---------- Temporizador para dormir ----------
@@ -250,6 +253,10 @@ object PlayerController {
         return c.repeatMode
     }
 
+    fun updateSpeed(value: Float) {
+        controller?.setPlaybackSpeed(value)
+    }
+
     private fun sync(p: Player) {
         currentSongId = p.currentMediaItem?.mediaId?.toLongOrNull()
         isPlaying = p.isPlaying
@@ -257,6 +264,7 @@ object PlayerController {
         repeatMode = p.repeatMode
         positionMs = p.currentPosition.coerceAtLeast(0)
         durationMs = p.duration.coerceAtLeast(0)
+        speed = p.playbackParameters.speed
         val items = mutableListOf<QueueItem>()
         val timeline = p.currentTimeline
         var i = timeline.getFirstWindowIndex(p.shuffleModeEnabled)

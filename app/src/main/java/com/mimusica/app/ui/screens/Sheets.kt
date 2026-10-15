@@ -36,6 +36,7 @@ import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -95,9 +96,12 @@ fun SongOptionsSheet(
     onDismiss: () -> Unit,
     onPlayNext: () -> Unit,
     onAddToQueue: () -> Unit,
+    onSpeed: () -> Unit,
     onAddToPlaylist: () -> Unit,
+
     onRemoveFromPlaylist: () -> Unit,
     onOpen: (Collection) -> Unit,
+
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Nocturne.Surface) {
         Column(
@@ -145,6 +149,9 @@ fun SongOptionsSheet(
             SheetRow(
                 Icons.AutoMirrored.Rounded.PlaylistAdd, "Agregar a una playlist"
             ) { onAddToPlaylist() }
+            SheetRow(Icons.Rounded.Speed, "Velocidad") {
+                onSpeed()
+            }
             if (fromPlaylistId != null) {
                 SheetRow(
                     Icons.Rounded.RemoveCircleOutline,
@@ -358,16 +365,35 @@ fun SleepTimerSheet(onDismiss: () -> Unit, onChosen: (String) -> Unit) {
         containerColor = Nocturne.Surface,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
-        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
-            Row(Modifier.padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Bedtime, null, tint = Nocturne.Lavender, modifier = Modifier.size(24.dp))
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(bottom = 12.dp)
+        ) {
+            Row(
+                Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Rounded.Bedtime,
+                    null,
+                    tint = Nocturne.Lavender,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(12.dp))
-                Text("Temporizador", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "Temporizador",
+                    color = Nocturne.TextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
             Text(
                 "La música se pausará sola, aunque apagues la pantalla.",
                 color = Nocturne.TextSecondary, fontSize = 14.sp,
-                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 8.dp),
             )
             listOf(15, 30, 45, 60).forEach { min ->
                 SheetRow(Icons.Rounded.Timer, "$min minutos") {
@@ -380,9 +406,61 @@ fun SleepTimerSheet(onDismiss: () -> Unit, onChosen: (String) -> Unit) {
                 onChosen("La música se pausará al terminar esta canción")
             }
             if (PlayerController.sleepTimerActive) {
-                SheetRow(Icons.Rounded.TimerOff, "Desactivar temporizador", tint = Color(0xFFFF8A9A)) {
+                SheetRow(
+                    Icons.Rounded.TimerOff,
+                    "Desactivar temporizador",
+                    tint = Color(0xFFFF8A9A)
+                ) {
                     PlayerController.cancelSleepTimer()
                     onChosen("Temporizador desactivado")
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SpeedSheet(onDismiss: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Nocturne.Surface,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(bottom = 12.dp)
+        ) {
+            Row(
+                Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Rounded.Speed,
+                    null,
+                    tint = Nocturne.Lavender,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    "Velocidad",
+                    color = Nocturne.TextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Text(
+                "Se aplica a todas las canciones",
+                color = Nocturne.TextSecondary, fontSize = 14.sp,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 8.dp),
+            )
+            listOf(0.25f, 0.75f, 1f, 1.5f, 2f).forEach { s ->
+                SheetRow(Icons.Rounded.Speed, if (s % 1 == 0f) "${s.toInt()}x" else "${s}x") {
+                    PlayerController.updateSpeed(s)
+                    onDismiss()
                 }
             }
         }
@@ -408,10 +486,18 @@ fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> U
         containerColor = Nocturne.Surface,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
-        Column(Modifier.navigationBarsPadding().padding(bottom = 12.dp)) {
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(bottom = 12.dp)
+        ) {
             Text(
-                "Agregar a ${playlist.name}", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                "Agregar a ${playlist.name}",
+                color = Nocturne.TextPrimary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
             OutlinedTextField(
@@ -428,7 +514,9 @@ fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> U
                     unfocusedTextColor = Nocturne.TextPrimary,
                     cursorColor = Nocturne.Cyan,
                 ),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 4.dp),
             )
             if (visible.isEmpty()) {
                 Text(
@@ -443,7 +531,11 @@ fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> U
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clickable { if (checked) selected.remove(song.id) else selected.add(song.id) }
+                            .clickable {
+                                if (checked) selected.remove(song.id) else selected.add(
+                                    song.id
+                                )
+                            }
                             .padding(horizontal = 24.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -451,10 +543,19 @@ fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> U
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                song.title, color = if (checked) Nocturne.Lavender else Nocturne.TextPrimary,
-                                fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                song.title,
+                                color = if (checked) Nocturne.Lavender else Nocturne.TextPrimary,
+                                fontSize = 16.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
-                            Text(song.artist, color = Nocturne.TextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                song.artist,
+                                color = Nocturne.TextSecondary,
+                                fontSize = 13.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                         Icon(
                             if (checked) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
@@ -474,10 +575,16 @@ fun AddSongsSheet(playlistId: Long, onDismiss: () -> Unit, onDone: (String) -> U
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 10.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .then(if (count == 0) Modifier.background(Nocturne.SurfaceHigh) else Modifier.background(Nocturne.Accent))
+                    .then(
+                        if (count == 0) Modifier.background(Nocturne.SurfaceHigh) else Modifier.background(
+                            Nocturne.Accent
+                        )
+                    )
                     .clickable(enabled = count > 0) {
                         // Se agregan en el orden de la lista, no en el orden en que se tocaron.
-                        LibraryStore.addToPlaylist(playlistId, candidates.map { it.id }.filter { it in selected })
+                        LibraryStore.addToPlaylist(
+                            playlistId,
+                            candidates.map { it.id }.filter { it in selected })
                         onDone(if (count == 1) "1 canción agregada" else "$count canciones agregadas")
                     }
                     .padding(vertical = 14.dp),
@@ -500,7 +607,11 @@ fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, onConfirm:
                 onValueChange = { text = it.take(60) },
                 singleLine = true,
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
-                keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { if (text.isNotBlank()) onConfirm(text) }),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = {
+                    if (text.isNotBlank()) onConfirm(
+                        text
+                    )
+                }),
                 placeholder = { Text("Nombre", color = Nocturne.TextMuted) },
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
