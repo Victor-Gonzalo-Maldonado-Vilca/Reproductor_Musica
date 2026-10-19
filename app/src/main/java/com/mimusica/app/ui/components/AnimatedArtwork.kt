@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -50,6 +51,14 @@ fun AnimatedArtwork(
         ),
         label = "rebote",
     )
+    val halo = ArtworkEffect.Halo in effects
+    val glow by animateFloatAsState(
+        targetValue = if (playing) 1f else 0f,
+        animationSpec = tween(durationMillis = 600),
+        label = "halo",
+    )
+    // Si hay halo, la carátula se hace un poco más pequeña para dejarle sitio alrededor
+    val inner = if (halo) size * 0.82f else size
 
     LaunchedEffect(playing, spin) {
         if (!playing || !spin) return@LaunchedEffect    // si no toca girar, no hagas nada
@@ -66,9 +75,25 @@ fun AnimatedArtwork(
         scaleY = scale
         rotationZ = if (spin) rotation.value else 0f
     }
-    when (base) {
-        ArtworkBase.Cover -> Artwork(song, size, layer, corner = 28.dp)
-        ArtworkBase.Vinyl -> VinylDisc(song, size, layer)
+    Box(Modifier.size(size), contentAlignment = Alignment.Center) {
+        if (halo) {
+            Canvas(Modifier.fillMaxSize()) {
+                val radio = this.size.minDimension / 2f
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        0.85f to Nocturne.Cyan.copy(alpha = glow),     // dónde empieza el brillo
+                        1f to Color.Transparent,                     // en el borde ya no brilla
+                        center = center,
+                        radius = radio,
+                    ),
+                    radius = radio,
+                )
+            }
+        }
+        when (base) {
+            ArtworkBase.Cover -> Artwork(song, inner, layer, corner = 28.dp)
+            ArtworkBase.Vinyl -> VinylDisc(song, inner, layer)
+        }
     }
 }
 
@@ -91,7 +116,8 @@ private fun VinylDisc(song: Song?, size: Dp, modifier: Modifier = Modifier) {
             }
         }
         // Etiqueta: la carátula, pequeña y redonda
-        Artwork(song, size * 0.4f, corner = size * 0.2f)
+        val label = size * 0.6f
+        Artwork(song, label, corner =  label / 2)
         // Agujero central
         Box(Modifier.size(size * 0.04f).clip(CircleShape).background(Nocturne.Background))
     }
