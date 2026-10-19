@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -68,37 +70,45 @@ fun AnimatedArtwork(
 
     val ring = on(ArtworkEffect.Ring)
     val sweep by animateFloatAsState(
-        targetValue = if (playing) 1f else 0f,       // lleno / vacío
+        targetValue = if (playing) 1f else 0f,
         animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
         label = "anillo",
     )
     val showProgress = on(ArtworkEffect.Progress)
-    // Si hay halo, la carátula se hace un poco más pequeña para dejarle sitio alrededor
+    // La posición puede pasarse un instante de la duración al terminar la canción.
+    val songProgress = progress.coerceIn(0f, 1f)
+    // Con halo o anillos, la carátula se encoge para dejarles sitio alrededor.
     val inner = if (halo || ring || showProgress) size * 0.82f else size
 
     LaunchedEffect(playing, spin) {
-        if (!playing || !spin) return@LaunchedEffect    // si no toca girar, no hagas nada
+        // Sin música o sin el efecto, el disco se queda quieto en su ángulo actual.
+        if (!playing || !spin) return@LaunchedEffect
         while (true) {
             rotation.animateTo(
-                targetValue = rotation.value + 360f,       // una vuelta completa
+                targetValue = rotation.value + 360f,
                 animationSpec = tween(durationMillis = 8000, easing = LinearEasing),
             )
             rotation.snapTo(rotation.value % 360f)
         }
     }
-    val layer = Modifier.graphicsLayer {
-        scaleX = scale
-        scaleY = scale
-        rotationZ = if (spin) rotation.value else 0f
-    }
+    // Giro y rebote en una sola capa. La sombra va dentro para que siga a la carátula
+    // (forma y tamaño) y no se quede grande detrás cuando se encoge.
+    val shape = if (base == ArtworkBase.Vinyl) CircleShape else RoundedCornerShape(28.dp)
+    val layer = Modifier
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+            rotationZ = if (spin) rotation.value else 0f
+        }
+        .shadow(48.dp, shape, ambientColor = Nocturne.Purple, spotColor = Nocturne.Cyan)
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         if (halo) {
             Canvas(Modifier.fillMaxSize()) {
                 val radio = this.size.minDimension / 2f
                 drawCircle(
                     brush = Brush.radialGradient(
-                        0.7f to Nocturne.Cyan.copy(alpha = glow),     // dónde empieza el brillo
-                        1f to Color.Transparent,                     // en el borde ya no brilla
+                        0.7f to Nocturne.Cyan.copy(alpha = glow),
+                        1f to Color.Transparent,
                         center = center,
                         radius = radio,
                     ),
@@ -116,34 +126,41 @@ fun AnimatedArtwork(
                     radius = r,
                     style = Stroke(width = grosor),
                 )
-                // 2. Arco de color que se llena
-                drawArc(
-                    brush = Brush.sweepGradient(listOf(Nocturne.Purple, Nocturne.Cyan, Nocturne.Purple)),
-                    startAngle = -90f,
-                    sweepAngle = 360f * sweep,
-                    useCenter = false,
-                    topLeft = Offset(center.x - r, center.y - r),
-                    size = Size(r * 2, r * 2),
-                    style = Stroke(width = grosor, cap = StrokeCap.Round),
-                )
+                // 2. Arco de color que se llena. Vacío no se dibuja: el extremo
+                // redondeado dejaría un punto suelto arriba.
+                if (sweep > 0f) {
+                    drawArc(
+                        brush = Brush.sweepGradient(listOf(Nocturne.Purple, Nocturne.Cyan, Nocturne.Purple)),
+                        startAngle = -90f,
+                        sweepAngle = 360f * sweep,
+                        useCenter = false,
+                        topLeft = Offset(center.x - r, center.y - r),
+                        size = Size(r * 2, r * 2),
+                        style = Stroke(width = grosor, cap = StrokeCap.Round),
+                    )
+                }
             }
         }
         if (showProgress) {
             Canvas(Modifier.fillMaxSize()) {
                 val r = this.size.minDimension / 2f * 0.97f
                 val grosor = 4.dp.toPx()
-                drawCircle( color = Color.White.copy(alpha = 0.15f),
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.15f),
                     radius = r,
-                    style = Stroke(width = grosor))
-                drawArc(
-                    color = Nocturne.Purple,
-                    startAngle = -90f,
-                    sweepAngle = 360f * progress,
-                    useCenter = false,
-                    topLeft = Offset(center.x - r, center.y - r),
-                    size = Size(r * 2, r * 2),
-                    style = Stroke(width = grosor, cap = StrokeCap.Round),
+                    style = Stroke(width = grosor),
                 )
+                if (songProgress > 0f) {
+                    drawArc(
+                        color = Nocturne.Purple,
+                        startAngle = -90f,
+                        sweepAngle = 360f * songProgress,
+                        useCenter = false,
+                        topLeft = Offset(center.x - r, center.y - r),
+                        size = Size(r * 2, r * 2),
+                        style = Stroke(width = grosor, cap = StrokeCap.Round),
+                    )
+                }
             }
         }
         when (base) {
@@ -153,6 +170,9 @@ fun AnimatedArtwork(
     }
 }
 
+/** Parte del disco que ocupa la etiqueta (la carátula del centro). */
+private const val LABEL_RATIO = 0.6f
+
 /** Disco de vinilo: negro con surcos y la carátula como etiqueta en el centro. */
 @Composable
 private fun VinylDisc(song: Song?, size: Dp, modifier: Modifier = Modifier) {
@@ -160,20 +180,21 @@ private fun VinylDisc(song: Song?, size: Dp, modifier: Modifier = Modifier) {
         modifier.size(size).clip(CircleShape).background(Color(0xFF0B0B10)),
         contentAlignment = Alignment.Center,
     ) {
-        // Surcos: círculos finos
+        // Surcos: repartidos entre el borde de la etiqueta y el del disco,
+        // así siguen viéndose aunque cambie el tamaño de la etiqueta.
         Canvas(Modifier.fillMaxSize()) {
             val radio = this.size.minDimension / 2f
             for (k in 1..3) {
                 drawCircle(
                     color = Color.White.copy(alpha = 0.06f),
-                    radius = radio * (0.5f + 0.1f * k),
+                    radius = radio * (LABEL_RATIO + (1f - LABEL_RATIO) * k / 4f),
                     style = Stroke(width = 1.dp.toPx()),
                 )
             }
         }
         // Etiqueta: la carátula, pequeña y redonda
-        val label = size * 0.6f
-        Artwork(song, label, corner =  label / 2)
+        val label = size * LABEL_RATIO
+        Artwork(song, label, corner = label / 2)
         // Agujero central
         Box(Modifier.size(size * 0.04f).clip(CircleShape).background(Nocturne.Background))
     }

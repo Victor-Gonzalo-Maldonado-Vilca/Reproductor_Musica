@@ -64,7 +64,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
-import com.mimusica.app.data.ArtworkBase
 import com.mimusica.app.ui.AppActions
 import com.mimusica.app.data.LibraryStore
 import com.mimusica.app.data.MusicRepository
@@ -125,18 +124,14 @@ fun NowPlayingScreen(actions: AppActions) {
             // ---------- Carátula ----------
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val side = minOf(maxWidth - 16.dp, maxHeight - 16.dp, 340.dp)
-                val base = LibraryStore.artworkBase
-                val shape = if (base == ArtworkBase.Vinyl) CircleShape else RoundedCornerShape(28.dp)
-                Box(Modifier.shadow(48.dp, shape, ambientColor = Nocturne.Purple, spotColor = Nocturne.Cyan)) {
-                    AnimatedArtwork(
-                        song = song,
-                        size = side,
-                        playing = PlayerController.isPlaying,
-                        progress = if (PlayerController.durationMs > 0) PlayerController.positionMs.toFloat() / PlayerController.durationMs else 0f,
-                        base = base,
-                        effects = LibraryStore.artworkEffects,
-                    )
-                }
+                AnimatedArtwork(
+                    song = song,
+                    size = side,
+                    playing = PlayerController.isPlaying,
+                    progress = if (PlayerController.durationMs > 0) PlayerController.positionMs.toFloat() / PlayerController.durationMs else 0f,
+                    base = LibraryStore.artworkBase,
+                    effects = LibraryStore.artworkEffects,
+                )
             }
 
             // ---------- Título ----------
