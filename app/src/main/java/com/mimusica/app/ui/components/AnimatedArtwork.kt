@@ -1,6 +1,7 @@
 package com.mimusica.app.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,8 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -57,8 +61,15 @@ fun AnimatedArtwork(
         animationSpec = tween(durationMillis = 600),
         label = "halo",
     )
+
+    val ring = ArtworkEffect.Ring in effects
+    val sweep by animateFloatAsState(
+        targetValue = if (playing) 1f else 0f,       // lleno / vacío
+        animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
+        label = "anillo",
+    )
     // Si hay halo, la carátula se hace un poco más pequeña para dejarle sitio alrededor
-    val inner = if (halo) size * 0.82f else size
+    val inner = if (halo || ring) size * 0.82f else size
 
     LaunchedEffect(playing, spin) {
         if (!playing || !spin) return@LaunchedEffect    // si no toca girar, no hagas nada
@@ -87,6 +98,28 @@ fun AnimatedArtwork(
                         radius = radio,
                     ),
                     radius = radio,
+                )
+            }
+        }
+        if (ring) {
+            Canvas(Modifier.fillMaxSize()) {
+                val r = this.size.minDimension / 2f * 0.9f
+                val grosor = 6.dp.toPx()
+                // 1. El aro completo, tenue
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.12f),
+                    radius = r,
+                    style = Stroke(width = grosor),
+                )
+                // 2. Arco de color que se llena
+                drawArc(
+                    brush = Brush.sweepGradient(listOf(Nocturne.Purple, Nocturne.Cyan, Nocturne.Purple)),
+                    startAngle = -90f,
+                    sweepAngle = 360f * sweep,
+                    useCenter = false,
+                    topLeft = Offset(center.x - r, center.y - r),
+                    size = Size(r * 2, r * 2),
+                    style = Stroke(width = grosor, cap = StrokeCap.Round),
                 )
             }
         }
