@@ -44,9 +44,13 @@ fun AnimatedArtwork(
     base: ArtworkBase,
     effects: Set<ArtworkEffect>,
 ) {
-    val spin = ArtworkEffect.Spin in effects && base == ArtworkBase.Vinyl
+    // Un efecto se dibuja si el usuario lo activó Y la forma actual lo permite
+    fun on(effect: ArtworkEffect) =
+        effect in effects && (!effect.needsVinyl || base == ArtworkBase.Vinyl)
+
+    val spin = on(ArtworkEffect.Spin)
     val rotation = remember { Animatable(0f) }
-    val pulse = ArtworkEffect.Pulse in effects
+    val pulse = on(ArtworkEffect.Pulse)
     val scale by animateFloatAsState(
         targetValue = if (pulse && !playing) 0.85f else 1f,
         animationSpec = spring(
@@ -55,20 +59,20 @@ fun AnimatedArtwork(
         ),
         label = "rebote",
     )
-    val halo = ArtworkEffect.Halo in effects
+    val halo = on(ArtworkEffect.Halo)
     val glow by animateFloatAsState(
-        targetValue = if (playing) 1f else 0f,
+        targetValue = if (playing) 0.5f else 0f,
         animationSpec = tween(durationMillis = 600),
         label = "halo",
     )
 
-    val ring = ArtworkEffect.Ring in effects
+    val ring = on(ArtworkEffect.Ring)
     val sweep by animateFloatAsState(
         targetValue = if (playing) 1f else 0f,       // lleno / vacío
         animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
         label = "anillo",
     )
-    val showProgress = ArtworkEffect.Progress in effects
+    val showProgress = on(ArtworkEffect.Progress)
     // Si hay halo, la carátula se hace un poco más pequeña para dejarle sitio alrededor
     val inner = if (halo || ring || showProgress) size * 0.82f else size
 
@@ -93,7 +97,7 @@ fun AnimatedArtwork(
                 val radio = this.size.minDimension / 2f
                 drawCircle(
                     brush = Brush.radialGradient(
-                        0.85f to Nocturne.Cyan.copy(alpha = glow),     // dónde empieza el brillo
+                        0.7f to Nocturne.Cyan.copy(alpha = glow),     // dónde empieza el brillo
                         1f to Color.Transparent,                     // en el borde ya no brilla
                         center = center,
                         radius = radio,

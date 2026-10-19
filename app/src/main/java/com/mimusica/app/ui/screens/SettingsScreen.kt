@@ -107,12 +107,12 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
             )
         }
         items(ArtworkEffect.entries) { effect ->
-            val spinNeedsVinyl = effect == ArtworkEffect.Spin && LibraryStore.artworkBase != ArtworkBase.Vinyl
-            SettingRow(Icons.Rounded.AutoAwesome, effect.label, effect.description) {
+            val blocked = effect.needsVinyl && LibraryStore.artworkBase != ArtworkBase.Vinyl
+            SettingRow(Icons.Rounded.AutoAwesome, effect.label, if (blocked) "Solo con Vinilo" else effect.description) {
                 Switch(
                     checked = effect in LibraryStore.artworkEffects,
                     onCheckedChange = { LibraryStore.toggleEffect(effect) },
-                    enabled = !spinNeedsVinyl,
+                    enabled = !blocked,
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = Nocturne.Purple,
                         checkedThumbColor = androidx.compose.ui.graphics.Color.White,
