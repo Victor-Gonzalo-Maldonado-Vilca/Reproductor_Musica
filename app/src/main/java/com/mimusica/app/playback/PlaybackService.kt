@@ -2,10 +2,14 @@ package com.mimusica.app.playback
 
 import android.app.PendingIntent
 import android.content.Intent
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.Futures
@@ -56,6 +60,23 @@ class PlaybackService : MediaSessionService() {
                 )
             })
             .build()
+        player.addListener(object : Player.Listener {
+            @OptIn(UnstableApi::class)
+            override fun onShuffleModeEnabledChanged(enabled: Boolean) {
+                if (!enabled || player.mediaItemCount == 0) return
+                val cur = player.currentMediaItemIndex
+                val others = (0 until player.mediaItemCount)
+                    .filter { it != cur }
+                    .shuffled()
+                val order = (listOf(cur) + others).toIntArray()
+                player.setShuffleOrder(
+                    ShuffleOrder.DefaultShuffleOrder(
+                        order,
+                        System.currentTimeMillis()
+                    )
+                )
+            }
+        })
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
