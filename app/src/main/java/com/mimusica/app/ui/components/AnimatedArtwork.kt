@@ -2,6 +2,9 @@ package com.mimusica.app.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +40,16 @@ fun AnimatedArtwork(
     effects: Set<ArtworkEffect>,
 ) {
     val spin = ArtworkEffect.Spin in effects && base == ArtworkBase.Vinyl
-    val rotation = remember { Animatable(0f) }        // ángulo inicial
+    val rotation = remember { Animatable(0f) }
+    val pulse = ArtworkEffect.Pulse in effects
+    val scale by animateFloatAsState(
+        targetValue = if (pulse && !playing) 0.85f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow,
+        ),
+        label = "rebote",
+    )
 
     LaunchedEffect(playing, spin) {
         if (!playing || !spin) return@LaunchedEffect    // si no toca girar, no hagas nada
@@ -48,9 +61,14 @@ fun AnimatedArtwork(
             rotation.snapTo(rotation.value % 360f)
         }
     }
+    val layer = Modifier.graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+        rotationZ = if (spin) rotation.value else 0f
+    }
     when (base) {
-        ArtworkBase.Cover -> Artwork(song, size, corner = 28.dp)
-        ArtworkBase.Vinyl -> VinylDisc(song, size, Modifier.graphicsLayer { rotationZ = rotation.valuegit add app/src/main/java/com/mimusica/app/ui/components/AnimatedArtwork.kt })
+        ArtworkBase.Cover -> Artwork(song, size, layer, corner = 28.dp)
+        ArtworkBase.Vinyl -> VinylDisc(song, size, layer)
     }
 }
 
