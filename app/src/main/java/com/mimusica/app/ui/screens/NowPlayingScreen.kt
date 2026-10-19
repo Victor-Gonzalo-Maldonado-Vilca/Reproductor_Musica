@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -249,12 +250,13 @@ fun NowPlayingScreen(actions: AppActions) {
     }
 
     if (showQueue) {
+        git add app/src/main/java/com/mimusica/app/ui/screens/NowPlayingScreen.kt
         ModalBottomSheet(onDismissRequest = { showQueue = false }, containerColor = Nocturne.Surface) {
             Text(
                 "A continuación", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
-            LazyColumn(Modifier.heightIn(max = 520.dp).navigationBarsPadding()) {
+            LazyColumn(Modifier.heightIn(max = 520.dp).navigationBarsPadding(), state = listState) {
                 itemsIndexed(PlayerController.queue) { index, item ->
                     val s = MusicRepository.song(item.songId) ?: return@itemsIndexed
                     val current = item.songId == PlayerController.currentSongId
