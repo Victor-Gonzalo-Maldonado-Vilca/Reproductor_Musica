@@ -68,8 +68,9 @@ fun AnimatedArtwork(
         animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
         label = "anillo",
     )
+    val showProgress = ArtworkEffect.Progress in effects
     // Si hay halo, la carátula se hace un poco más pequeña para dejarle sitio alrededor
-    val inner = if (halo || ring) size * 0.82f else size
+    val inner = if (halo || ring || showProgress) size * 0.82f else size
 
     LaunchedEffect(playing, spin) {
         if (!playing || !spin) return@LaunchedEffect    // si no toca girar, no hagas nada
@@ -116,6 +117,24 @@ fun AnimatedArtwork(
                     brush = Brush.sweepGradient(listOf(Nocturne.Purple, Nocturne.Cyan, Nocturne.Purple)),
                     startAngle = -90f,
                     sweepAngle = 360f * sweep,
+                    useCenter = false,
+                    topLeft = Offset(center.x - r, center.y - r),
+                    size = Size(r * 2, r * 2),
+                    style = Stroke(width = grosor, cap = StrokeCap.Round),
+                )
+            }
+        }
+        if (showProgress) {
+            Canvas(Modifier.fillMaxSize()) {
+                val r = this.size.minDimension / 2f * 0.97f
+                val grosor = 4.dp.toPx()
+                drawCircle( color = Color.White.copy(alpha = 0.15f),
+                    radius = r,
+                    style = Stroke(width = grosor))
+                drawArc(
+                    color = Nocturne.Purple,
+                    startAngle = -90f,
+                    sweepAngle = 360f * progress,
                     useCenter = false,
                     topLeft = Offset(center.x - r, center.y - r),
                     size = Size(r * 2, r * 2),
