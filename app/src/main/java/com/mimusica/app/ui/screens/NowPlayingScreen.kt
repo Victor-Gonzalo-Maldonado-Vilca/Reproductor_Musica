@@ -250,7 +250,9 @@ fun NowPlayingScreen(actions: AppActions) {
     }
 
     if (showQueue) {
-        git add app/src/main/java/com/mimusica/app/ui/screens/NowPlayingScreen.kt
+        // La cola se abre en la canción que está sonando, no al principio.
+        val start = PlayerController.queue.indexOfFirst { it.songId == PlayerController.currentSongId }
+        val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (start >= 0) start else 0)
         ModalBottomSheet(onDismissRequest = { showQueue = false }, containerColor = Nocturne.Surface) {
             Text(
                 "A continuación", color = Nocturne.TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold,
