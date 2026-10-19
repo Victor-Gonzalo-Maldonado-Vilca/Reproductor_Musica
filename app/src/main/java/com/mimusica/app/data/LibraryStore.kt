@@ -27,6 +27,13 @@ object LibraryStore {
         private set
     var skipShortTracks by mutableStateOf(true)
         private set
+
+    var artworkBase by mutableStateOf(ArtworkBase.Cover)
+        private set
+
+    var artworkEffects by mutableStateOf<Set<ArtworkEffect>>(emptySet())
+        private set
+
     var userName by mutableStateOf("")
         private set
 
@@ -39,6 +46,11 @@ object LibraryStore {
         pinned = prefs.getStringSet("pinned", emptySet())!!.toSet()
         skipShortTracks = prefs.getBoolean("skip_short", true)
         userName = prefs.getString("user_name", "") ?: ""
+        artworkBase = ArtworkBase.entries.firstOrNull { it.name == prefs.getString("artwork_base", null) }
+            ?: ArtworkBase.Cover
+        artworkEffects = prefs.getStringSet("artwork_effects", emptySet())!!
+            .mapNotNull { saved -> ArtworkEffect.entries.firstOrNull { it.name == saved } }
+            .toSet()
         playlists = runCatching {
             val arr = JSONArray(prefs.getString("playlists", "[]"))
             (0 until arr.length()).map { i ->
@@ -145,6 +157,16 @@ object LibraryStore {
     fun setSkipShort(value: Boolean) {
         skipShortTracks = value
         prefs.edit().putBoolean("skip_short", value).apply()
+    }
+
+    fun setArtworkShape(base: ArtworkBase) {
+        artworkBase = base
+        prefs.edit().putString("artwork_base", base.name).apply()
+    }
+
+    fun toggleEffect(effect: ArtworkEffect) {
+        artworkEffects = if (effect in artworkEffects) artworkEffects - effect else artworkEffects + effect
+        prefs.edit().putStringSet("artwork_effects", artworkEffects.map { it.name }.toSet()).apply()
     }
 
     fun saveUserName(value: String) {

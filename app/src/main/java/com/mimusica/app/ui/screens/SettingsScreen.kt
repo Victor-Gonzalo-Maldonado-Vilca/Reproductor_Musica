@@ -40,12 +40,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.rounded.Album
+import androidx.compose.material.icons.rounded.AutoAwesome
+import com.mimusica.app.data.ArtworkBase
+import com.mimusica.app.data.ArtworkEffect
 import com.mimusica.app.ui.AppActions
 import com.mimusica.app.data.LibraryStore
 import com.mimusica.app.data.MusicRepository
 import com.mimusica.app.data.formatSize
 import com.mimusica.app.ui.components.UserAvatar
 import com.mimusica.app.ui.theme.Nocturne
+import androidx.compose.foundation.lazy.items
 
 @Composable
 fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan: (onDone: () -> Unit) -> Unit) {
@@ -87,6 +92,33 @@ fun SettingsScreen(actions: AppActions, contentPadding: PaddingValues, onRescan:
                     )
                 }
                 Icon(Icons.Rounded.Edit, "Editar nombre", tint = Nocturne.Cyan, modifier = Modifier.size(20.dp))
+            }
+        }
+
+        item { Group("APARIENCIA") }
+        item {
+            val base = LibraryStore.artworkBase
+            SettingRow(
+                Icons.Rounded.Album, "Estilo de carátula", base.label,
+                onClick = {
+                    val next = ArtworkBase.entries[(base.ordinal + 1) % ArtworkBase.entries.size]
+                    LibraryStore.setArtworkShape(next)
+                },
+            )
+        }
+        items(ArtworkEffect.entries) { effect ->
+            val spinNeedsVinyl = effect == ArtworkEffect.Spin && LibraryStore.artworkBase != ArtworkBase.Vinyl
+            SettingRow(Icons.Rounded.AutoAwesome, effect.label, effect.description) {
+                Switch(
+                    checked = effect in LibraryStore.artworkEffects,
+                    onCheckedChange = { LibraryStore.toggleEffect(effect) },
+                    enabled = !spinNeedsVinyl,
+                    colors = SwitchDefaults.colors(
+                        checkedTrackColor = Nocturne.Purple,
+                        checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+                        uncheckedTrackColor = Nocturne.SurfaceHigher,
+                    ),
+                )
             }
         }
 
